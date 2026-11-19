@@ -1883,23 +1883,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         },
  *     }>,
  * }
- * @psalm-type StimulusConfig = array{
- *     controller_paths?: list<scalar|Param|null>,
- *     controllers_json?: scalar|Param|null, // Default: "%kernel.project_dir%/assets/controllers.json"
- * }
- * @psalm-type TurboConfig = array{
- *     broadcast?: bool|array{
- *         enabled?: bool|Param, // Default: true
- *         entity_template_prefixes?: list<scalar|Param|null>,
- *         doctrine_orm?: bool|array{ // Enable the Doctrine ORM integration
- *             enabled?: bool|Param, // Default: false
- *         },
- *     },
- *     default_transport?: scalar|Param|null, // Default: "default"
- *     mercure?: array{
- *         ignore_cookie_domain_errors?: bool|Param, // Render nothing and log a warning, instead of failing, when the authorization cookie of a private stream source cannot be created because the page is served on another domain than the hub // Default: false
- *     },
- * }
  * @psalm-type TwigConfig = array{
  *     form_themes?: list<scalar|Param|null>,
  *     globals?: array<string, array{ // Default: []
@@ -1975,8 +1958,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     ai?: AiConfig,
  *     mcp?: McpConfig,
  *     monolog?: MonologConfig,
- *     stimulus?: StimulusConfig,
- *     turbo?: TurboConfig,
  *     twig?: TwigConfig,
  *     mercure?: MercureConfig,
  *     xray?: XrayConfig,
@@ -1988,8 +1969,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ai?: AiConfig,
  *         mcp?: McpConfig,
  *         monolog?: MonologConfig,
- *         stimulus?: StimulusConfig,
- *         turbo?: TurboConfig,
  *         twig?: TwigConfig,
  *         mercure?: MercureConfig,
  *         xray?: XrayConfig,
@@ -2002,8 +1981,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ai?: AiConfig,
  *         mcp?: McpConfig,
  *         monolog?: MonologConfig,
- *         stimulus?: StimulusConfig,
- *         turbo?: TurboConfig,
  *         twig?: TwigConfig,
  *         mercure?: MercureConfig,
  *         xray?: XrayConfig,
@@ -2016,8 +1993,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ai?: AiConfig,
  *         mcp?: McpConfig,
  *         monolog?: MonologConfig,
- *         stimulus?: StimulusConfig,
- *         turbo?: TurboConfig,
  *         twig?: TwigConfig,
  *         mercure?: MercureConfig,
  *         xray?: XrayConfig,

@@ -12,12 +12,15 @@ Symfony AI is 1.0 beta; PHP MCP SDK ~0.9. ALWAYS read vendor code before using a
 - Instrumentation by decoration/listeners only. Never edit vendor.
 - Recorder failures must never break an agent run. Wrap and swallow with a logged warning.
 - Redact secrets by default. Redaction runs BEFORE events leave the process.
-- Frontend: Twig + Stimulus + Turbo, AssetMapper, SVG/CSS animation. No CDNs. Vendor JS locally. Respect `prefers-reduced-motion`.
+- Frontend: Twig + Stimulus (vendored in the bundle) + AssetMapper ES modules, SVG/CSS animation. No CDNs. Vendor JS locally. Respect `prefers-reduced-motion`. Turbo is not used (single-page console).
 - Events have monotonically increasing `seq` per run; clients re-order and de-dupe.
-- Tests: PHPUnit; use `ScriptedPlatform`, never the network. Test event sequences exactly.
+- Tests: PHPUnit; use `ScriptedPlatform` (app) or Symfony AI's `MockPlatformFactory` (bundle), never the network. Test event sequences exactly.
 
 ## Commands
-`make up`, `make down`, `make test`, `make stan`, `make cs`
+`make up`, `make down`, `make test`, `make stan`, `make cs`, `make console c="…"`, `make composer c="…"`.
+On Windows without make: `./dev.ps1 <target>` mirrors every target. Keep both in sync.
+Composer runs inside the container (`vendor/` lives in a named volume). The bundle lives outside the app's
+watched paths: after editing `lib/xray-bundle/src`, clear the cache (`./dev.ps1 console cache:clear`).
 
 ## Don'ts
 No secrets in git. No TODOs in committed code. No dead code. No scope creep before the priority list in PROMPT.md section 7 is satisfied in order.

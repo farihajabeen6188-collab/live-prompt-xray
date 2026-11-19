@@ -1,124 +1,110 @@
 # Architecture
 
-## Monorepo tree (target)
+## Monorepo tree (as built)
 
 ```
 live-prompt-xray/
-├── CLAUDE.md
-├── README.md
-├── LICENSE
-├── Makefile
-├── docker-compose.yml          # FrankenPHP (Mercure hub built in) preferred
-├── Dockerfile
-├── .env.example
-├── phpstan.neon
-├── .php-cs-fixer.dist.php
-├── lib/
-│   └── xray-bundle/
-│       ├── composer.json
-│       ├── README.md           # 5-line install guide
-│       ├── config/
-│       │   ├── services.php
-│       │   └── routes.php      # /_xray/*
-│       ├── src/
-│       │   ├── XRayBundle.php
-│       │   ├── DependencyInjection/        # Configuration, Extension, compiler passes
-│       │   ├── Event/                      # typed trace events (see TRACE_SCHEMA.md)
-│       │   │   ├── TraceEvent.php          # interface / base
-│       │   │   ├── RunStarted.php
-│       │   │   ├── PromptSent.php
-│       │   │   ├── TokenChunk.php
-│       │   │   ├── ToolCallRequested.php
-│       │   │   ├── ToolCallStarted.php
-│       │   │   ├── ToolCallFinished.php
-│       │   │   ├── McpFrame.php
-│       │   │   ├── RetrievalHit.php
-│       │   │   ├── UsageReported.php
-│       │   │   ├── RunError.php
-│       │   │   └── RunFinished.php
-│       │   ├── Recorder/
-│       │   │   ├── Recorder.php            # seq numbers, run ids, safe-failure
-│       │   │   ├── Redactor.php
-│       │   │   └── RunContext.php
-│       │   ├── Instrumentation/
-│       │   │   ├── TracingPlatform.php     # decorates PlatformInterface
-│       │   │   ├── TracingToolbox.php      # decorates the Toolbox
-│       │   │   ├── TracingStore.php        # decorates Store(s)
-│       │   │   ├── AgentRunListener.php    # lifecycle (processors/events)
-│       │   │   └── Mcp/                    # JSON-RPC frame tap (transport/handler level)
-│       │   ├── Transport/
-│       │   │   ├── EventPublisher.php      # interface
-│       │   │   ├── MercurePublisher.php
-│       │   │   └── SsePublisher.php        # fallback
-│       │   ├── Storage/
-│       │   │   ├── TraceStore.php          # interface
-│       │   │   └── SqliteTraceStore.php
-│       │   ├── Replay/ReplayStreamer.php   # replays a stored trace at speed N
-│       │   ├── Diff/TraceDiffer.php
-│       │   ├── Pricing/CostEstimator.php   # configurable per-model price table
-│       │   ├── Controller/
-│       │   │   ├── ConsoleController.php   # /_xray (main UI)
-│       │   │   ├── StreamController.php    # live + replay streams
-│       │   │   └── TraceController.php     # export/import/list/diff
-│       │   └── Resources/
-│       │       ├── views/                  # Twig
-│       │       └── assets/                 # Stimulus controllers, css, vendored JS
-│       └── tests/
-├── app/                                    # demo app
-│   ├── composer.json
+├── CLAUDE.md, README.md, LICENSE
+├── Makefile, dev.ps1                   # dev.ps1 mirrors every make target on Windows
+├── docker-compose.yml, Dockerfile      # FrankenPHP 1.13 (PHP 8.4) with its built-in Mercure hub
+├── docker/                             # Caddyfile, php.ini, entrypoint (composer install on first boot)
+├── phpstan.neon, .php-cs-fixer.dist.php
+├── lib/xray-bundle/                    # the reusable bundle
+│   ├── config/{services.php,routes.php}
+│   ├── src/
+│   │   ├── XRayBundle.php              # config tree, services, AssetMapper path, compiler pass
+│   │   ├── DependencyInjection/InstrumentationPass.php   # decorates tagged services
+│   │   ├── Event/                      # TraceEvent + one readonly class per type, Envelope
+│   │   ├── Recorder/                   # Recorder (seq, ts, safe-failure), Redactor, RunContext, Run
+│   │   ├── Instrumentation/
+│   │   │   ├── TracingAgent.php        # run lifecycle (wraps the Execution)
+│   │   │   ├── TracingPlatform.php     # prompt, stream, tool calls, usage (DeferredResult callbacks)
+│   │   │   ├── TurnRecorder.php, TurnStreamListener.php
+│   │   │   ├── TracingToolbox.php      # tool start/finish, local vs MCP
+│   │   │   ├── TracingRetriever.php    # retrieval hits and scores
+│   │   │   └── Mcp/{TappingTransport,McpToolDirectory}.php  # JSON-RPC frame tap on the client transport
+│   │   ├── Transport/{EventPublisher,MercurePublisher,NullPublisher}.php
+│   │   ├── Storage/{TraceStore,SqliteTraceStore,RunRecord}.php
+│   │   ├── Replay/TraceFile.php        # export/import format
+│   │   ├── Diff/TraceDiffer.php
+│   │   ├── Pricing/CostEstimator.php
+│   │   └── Controller/{ConsoleController,StreamController,TraceController}.php
+│   ├── templates/console.html.twig
+│   ├── assets/                         # console.css, console.js, controllers/, lib/ (graph, trace,
+│   │                                   # views, player, diff), vendor/stimulus.js
+│   └── tests/{Unit,Integration,Support}
+├── app/                                # the demo app
 │   ├── config/packages/{ai,mcp,xray,mercure}.yaml
 │   ├── src/
-│   │   ├── Agent/DemoAgentFactory.php
-│   │   ├── Platform/ScriptedPlatform.php   # fake model with streaming + tool calls
-│   │   ├── Tool/{Weather,Notes,Calculator,SlowTool,FlakyTool}.php
-│   │   ├── Mcp/DemoMcpServer.php           # #[McpTool] services
-│   │   ├── Rag/{CorpusLoader,DocsStore}.php
-│   │   └── Controller/{ScenarioController,RunController}.php
-│   ├── scripted/                           # JSON scripts per scenario for ScriptedPlatform
-│   ├── corpus/                             # small markdown docs for the RAG demo
-│   └── tests/
+│   │   ├── Platform/{ScriptedPlatform,ScriptBook,ScriptedTurn,PassThroughConverter,PlatformSelector}.php
+│   │   ├── Mcp/DemoTools.php           # 5 #[McpTool]s served at /mcp
+│   │   ├── Demo/{WeatherService,NotesRepository,Calculator}.php
+│   │   ├── Rag/{HashingVectorizer,DocsStoreFactory,DocsRetriever,DocsContextProcessor}.php
+│   │   ├── Tool/SearchDocs.php         # a local (non-MCP) tool
+│   │   └── Controller/{RunController,HomeController}.php
+│   ├── scripted/*.json                 # one script per scenario for the scripted model
+│   ├── corpus/*.md                     # 10 Nimbus Cloud docs for RAG
+│   ├── data/notes.json
+│   └── tests/{Integration,Functional}
 └── docs/
-    ├── ARCHITECTURE.md
-    ├── TRACE_SCHEMA.md
-    ├── UI_SPEC.md
-    ├── DEMO_SCENARIOS.md
-    ├── FEEDBACK.md
-    ├── VIDEO_SCRIPT.md
-    └── SUBMISSION_CHECKLIST.md
 ```
 
 ## Data flow
 
 ```mermaid
 flowchart LR
-  U[User prompt] --> RC[RunController]
-  RC --> AG[Symfony AI Agent]
-  AG -->|decorated| PL[TracingPlatform -> real or scripted model]
-  AG -->|decorated| TB[TracingToolbox -> tools]
-  TB --> MCP[Demo MCP server]
-  AG -->|decorated| ST[TracingStore -> RAG corpus]
-  MCP -. JSON-RPC frames .-> TAP[MCP frame tap]
-  PL --> REC[Recorder: seq, redact, safe-fail]
+  U[Console: prompt] -->|POST /demo/run with runId| RC[RunController]
+  RC --> AG[TracingAgent → Symfony AI Agent]
+  AG --> IP[DocsContextProcessor] --> RT[TracingRetriever → in-memory Store]
+  AG --> PL[TracingPlatform → ScriptedPlatform or Ollama]
+  AG --> TB[TracingToolbox → FaultTolerant / Chain toolbox]
+  TB --> LT[search_docs: local tool] --> RT
+  TB --> MT[McpToolbox → MCP client] --> TAP[TappingTransport] -->|HTTP JSON-RPC| MS[Demo MCP server /mcp]
+  PL --> REC[Recorder: seq, ts, redact, safe-fail]
   TB --> REC
-  ST --> REC
+  RT --> REC
   TAP --> REC
-  REC --> PUB[Publisher: Mercure or SSE]
-  REC --> DB[(TraceStore)]
-  PUB --> UI[Browser: graph, tokens, waterfall, MCP inspector]
-  DB --> RP[Replay / Export / Diff] --> UI
+  AG --> REC
+  REC --> DB[(SQLite TraceStore)]
+  REC --> PUB[MercurePublisher] --> HUB[FrankenPHP Mercure hub]
+  HUB -->|EventSource, topic xray/runs/{runId}| UI[Console: graph, tokens, waterfall, inspector, meters]
+  DB -->|/_xray/runs/{id}, /stream, /replay, /export, /diff| UI
 ```
 
 ## Key decisions
-- **Decoration over patching**: everything is added via service decoration/listeners so the bundle works in any app.
-- **Safe-failure**: `Recorder::emit()` catches everything; agent runs never break because of X-Ray.
-- **Order**: events carry `runId`, `seq`, `ts` (monotonic ms from run start). The client sorts by `seq` and drops duplicates.
-- **Redaction before publish**: the `Redactor` rewrites payloads before storage and transport.
-- **Realtime transport: Mercure** (decided 2026-11-19 after the Phase 0 spike). FrankenPHP 1.13.5 ships the hub;
-  `symfony/mercure-bundle` 0.3.9 publishes to `http://localhost/.well-known/mercure`, the browser subscribes with
-  `EventSource` to topic `xray/runs/{runId}`. Measured publish-to-render latency in the browser: 8–32 ms.
-  The hub runs with `protocol_version_compatibility 8` because the Symfony Mercure client signs HS256 publisher JWTs
-  (the newer Mercure module refuses `publisher_jwt` otherwise). Subscriptions are anonymous: only redacted events
-  reach the hub. Two concurrent publishes arrived out of order in the spike, so the client re-orders by `seq`.
-  SSE from a streaming controller stays the fallback for apps that don't run a Mercure hub (Phase 4).
-- **Demo Mode**: only the model is scripted. Tools, MCP, RAG, recorder and UI are real.
-- **Disable switch**: `xray.enabled: false` removes all decorators from the container.
+- **Decoration over patching.** `InstrumentationPass` decorates services by the tags Symfony AI and the MCP
+  bundle already set: `ai.agent`, `ai.platform`, `ai.toolbox` (priority 0, inside the fault tolerant toolbox),
+  `ai.retriever` and the transport of each `mcp.client.connection`. No vendor code is touched; the bundle works
+  in any app that uses those bundles.
+- **Observation, not interception.** The platform decorator registers `DeferredResult::onConvert()`/`onError()`
+  callbacks and a `StreamResult` listener; it never rewrites a delta. The agent decorator passes every
+  `Execution` update through unchanged.
+- **Safe-failure.** `Recorder` catches every failure (store, transport, bugs in a payload) and logs a warning;
+  so do the stream listener and the frame tap. Tests prove a dead hub and a failing store leave runs unchanged.
+- **Order.** Events carry `runId`, `seq`, `ts` (monotonic ms from run start). The client buffers by `seq`, applies
+  strictly in order and drops duplicates (two concurrent publishes arrived out of order in the Phase 0 spike).
+- **Redaction before publish.** The `Redactor` rewrites payloads before storage and transport.
+- **Realtime transport: Mercure** (decided 2026-11-19 after the Phase 0 spike). FrankenPHP ships the hub;
+  `symfony/mercure-bundle` publishes to `http://localhost/.well-known/mercure`. Measured publish-to-render latency
+  in the browser: 8–32 ms. The console subscribes once to the URI template `xray/runs/{runId}` and so follows every
+  run, including runs started outside the console. The hub runs with `protocol_version_compatibility 8` because
+  the Symfony Mercure client signs HS256 publisher JWTs. `transport: auto` falls back to **SSE from the trace
+  store** (`/_xray/runs/{id}/stream`, 40 ms polling, `Last-Event-ID` resume) when MercureBundle is absent.
+- **Replay on a virtual clock in the browser.** The console fetches a run's events and replays them through the
+  same `Trace.push()` + render path as live events, which gives pause, speed and scrubbing. `/replay?speed=` is the
+  same idea server-side, as SSE, for headless consumers.
+- **Demo Mode.** Only the model is scripted: `ScriptedPlatform` is a real `PlatformInterface` that streams
+  `TextDelta`s with realistic pacing and emits `ToolCallComplete`; its answers are templated on the *real* tool
+  results. It reports no token usage, so the meters show X-Ray's estimate, labelled as such.
+  Tools, the MCP client and server, RAG, the recorder and the UI are real.
+- **RAG without API keys.** `HashingVectorizer` embeds text locally (feature hashing); the in-memory store computes
+  real cosine distances. `DocsRetriever` issues a plain `VectorQuery` (Symfony's `Retriever` would switch to a
+  hybrid query, see FEEDBACK.md).
+- **MCP for real.** The demo agent reaches the demo MCP server through the MCP client bridge
+  (`tools.services: [{ mcp_server: 'xray.demo' }]`): over HTTP in dev, over STDIO in tests (hermetic).
+- **Frontend without a build.** The console is ES modules served by AssetMapper. Relative imports are resolved
+  through an import map the console renders itself, and Stimulus is vendored in the bundle, so a host app needs
+  no `importmap.php` or `controllers.json` change. Turbo is not used: the console is a single page.
+  SVG/CSS animation, `requestAnimationFrame` batching, `prefers-reduced-motion` respected.
+- **Disable switch.** `xray.enabled: false` (or `XRAY_ENABLED=0`, read when the container is built) removes all
+  X-Ray services and decorators.
