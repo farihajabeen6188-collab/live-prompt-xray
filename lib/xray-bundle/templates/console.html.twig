@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Live Prompt X-Ray</title>
+    <style>
+        :root { color-scheme: dark; --bg: #0a0e14; --fg: #d7dde8; --accent: #4fd1c5; --muted: #6b7686; }
+        body { margin: 0; padding: 24px; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, sans-serif; }
+        h1 { font-size: 18px; }
+        button { background: var(--accent); color: var(--bg); border: 0; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+        #events li { font-family: ui-monospace, monospace; color: var(--muted); }
+    </style>
+</head>
+<body>
+    <h1>Live Prompt X-Ray: transport spike</h1>
+    <p>Status: <span id="status">connecting…</span></p>
+    <button id="send" type="button">Push a spike event</button>
+    <ol id="events"></ol>
+    <script>
+        const hub = new URL({{ mercure()|json_encode|raw }}, window.location.origin);
+        hub.searchParams.append('topic', {{ topic|json_encode|raw }});
+        const source = new EventSource(hub);
+        const status = document.getElementById('status');
+        source.onopen = () => { status.textContent = 'subscribed'; };
+        source.onerror = () => { status.textContent = 'disconnected, retrying…'; };
+        source.onmessage = (message) => {
+            const event = JSON.parse(message.data);
+            const li = document.createElement('li');
+            li.textContent = `#${event.seq} ${event.type} received ${Date.now() - event.data.sentAt} ms after publish`;
+            li.dataset.seq = event.seq;
+            document.getElementById('events').append(li);
+        };
+        let seq = 0;
+        document.getElementById('send').addEventListener('click', () => {
+            fetch({{ path('xray_spike')|json_encode|raw }}, { method: 'POST', body: new URLSearchParams({ seq: String(++seq) }) });
+        });
+    </script>
+</body>
+</html>

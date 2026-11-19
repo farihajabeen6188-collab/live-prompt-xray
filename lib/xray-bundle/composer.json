@@ -1,0 +1,20 @@
+{
+    "name": "xray/xray-bundle",
+    "description": "Live Prompt X-Ray: a realtime visual debugger for Symfony AI agents and MCP.",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.4",
+        "symfony/framework-bundle": "^7.4",
+        "symfony/twig-bundle": "^7.4",
+        "symfony/mercure-bundle": "^0.3"
+    },
+    "autoload": {
+        "psr-4": { "XRay\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "XRay\\Tests\\": "tests/" }
+    },
+    "minimum-stability": "beta",
+    "prefer-stable": true
+}

@@ -113,6 +113,12 @@ flowchart LR
 - **Safe-failure**: `Recorder::emit()` catches everything; agent runs never break because of X-Ray.
 - **Order**: events carry `runId`, `seq`, `ts` (monotonic ms from run start). The client sorts by `seq` and drops duplicates.
 - **Redaction before publish**: the `Redactor` rewrites payloads before storage and transport.
-- **Realtime transport**: spike Mercure (FrankenPHP built-in hub) vs SSE in Phase 0; record the decision here.
+- **Realtime transport: Mercure** (decided 2026-11-19 after the Phase 0 spike). FrankenPHP 1.13.5 ships the hub;
+  `symfony/mercure-bundle` 0.3.9 publishes to `http://localhost/.well-known/mercure`, the browser subscribes with
+  `EventSource` to topic `xray/runs/{runId}`. Measured publish-to-render latency in the browser: 8–32 ms.
+  The hub runs with `protocol_version_compatibility 8` because the Symfony Mercure client signs HS256 publisher JWTs
+  (the newer Mercure module refuses `publisher_jwt` otherwise). Subscriptions are anonymous: only redacted events
+  reach the hub. Two concurrent publishes arrived out of order in the spike, so the client re-orders by `seq`.
+  SSE from a streaming controller stays the fallback for apps that don't run a Mercure hub (Phase 4).
 - **Demo Mode**: only the model is scripted. Tools, MCP, RAG, recorder and UI are real.
 - **Disable switch**: `xray.enabled: false` removes all decorators from the container.

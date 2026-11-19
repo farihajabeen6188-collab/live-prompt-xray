@@ -1,0 +1,11 @@
+/app/vendor/
+/app/var/
+/app/.env.local
+/app/.env.*.local
+/app/public/assets/
+/app/assets/vendor/
+/lib/xray-bundle/vendor/
+/lib/xray-bundle/composer.lock
+.phpunit.result.cache
+.php-cs-fixer.cache
+/.env

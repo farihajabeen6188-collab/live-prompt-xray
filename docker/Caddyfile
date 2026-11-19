@@ -1,0 +1,21 @@
+{
+	auto_https off
+	frankenphp
+}
+
+:80 {
+	root * /srv/app/public
+	encode zstd br gzip
+
+	# Built-in Mercure hub: X-Ray publishes trace events here, the browser subscribes.
+	# The Symfony Mercure client signs HS256 publisher JWTs (Mercure protocol 8), so this
+	# local hub opts into protocol-8 compatibility explicitly. Subscribing is anonymous:
+	# the hub only ever carries already-redacted trace events.
+	mercure {
+		protocol_version_compatibility 8
+		publisher_jwt {env.MERCURE_JWT_SECRET}
+		anonymous
+	}
+
+	php_server
+}
