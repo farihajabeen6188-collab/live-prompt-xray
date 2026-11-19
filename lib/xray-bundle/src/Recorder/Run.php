@@ -20,9 +20,6 @@ final class Run
     public int $errors = 0;
     public string $finalText = '';
 
-    /** @var array<string, string> callId => tool name */
-    public array $toolNames = [];
-
     /** @var array<string, array{name: string, arguments: array<string, mixed>}> callIds waiting for their MCP tools/call */
     public array $awaitingMcp = [];
 
@@ -36,11 +33,6 @@ final class Run
     public function nextSeq(): int
     {
         return ++$this->seq;
-    }
-
-    public function lastSeq(): int
-    {
-        return $this->seq;
     }
 
     public function elapsedMs(int $nowNs): int

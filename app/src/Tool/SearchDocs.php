@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tool;
 
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
-use Symfony\AI\Store\Document\VectorDocumentInterface;
 use Symfony\AI\Store\RetrieverInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -30,7 +29,6 @@ final readonly class SearchDocs
     {
         $hits = [];
         foreach ($this->retriever->retrieve($query, ['maxItems' => 2]) as $document) {
-            \assert($document instanceof VectorDocumentInterface);
             $hits[] = ['id' => (string) $document->getId(), 'text' => (string) $document->getMetadata()->getText()];
         }
 

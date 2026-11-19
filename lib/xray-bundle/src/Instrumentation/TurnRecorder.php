@@ -47,11 +47,7 @@ final class TurnRecorder
      */
     public function toolCalls(iterable $toolCalls): void
     {
-        $run = $this->recorder->context()->current();
         foreach ($toolCalls as $toolCall) {
-            if (null !== $run) {
-                $run->toolNames[$toolCall->getId()] = $toolCall->getName();
-            }
             $this->recorder->emit(new ToolCallRequested($toolCall->getId(), $toolCall->getName(), $toolCall->getArguments(), $this->turn));
         }
     }
@@ -68,9 +64,10 @@ final class TurnRecorder
         }
         $this->closed = true;
 
-        $reported = null !== $this->usage && (null !== $this->usage->getPromptTokens() || null !== $this->usage->getCompletionTokens());
-        $input = $reported ? (int) $this->usage?->getPromptTokens() : $this->estimatedInputTokens;
-        $output = $reported ? (int) $this->usage?->getCompletionTokens() : CostEstimator::estimateTokens($this->text);
+        $usage = $this->usage;
+        $reported = null !== $usage && (null !== $usage->getPromptTokens() || null !== $usage->getCompletionTokens());
+        $input = null !== $usage && $reported ? (int) $usage->getPromptTokens() : $this->estimatedInputTokens;
+        $output = null !== $usage && $reported ? (int) $usage->getCompletionTokens() : CostEstimator::estimateTokens($this->text);
         $cost = $this->costs->estimate($this->model, $input, $output);
 
         $context = $this->recorder->context();

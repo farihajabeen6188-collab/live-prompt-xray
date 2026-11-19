@@ -19,6 +19,12 @@ final class HashingVectorizer implements VectorizerInterface
     private const int DIMENSIONS = 512;
     private const array STOPWORDS = ['the', 'and', 'for', 'are', 'can', 'with', 'our', 'your', 'you', 'what', 'about', 'how', 'all', 'any', 'per', 'get', 'has', 'have', 'this', 'that', 'everything', 'know', 'tell', 'eur', 'usd'];
 
+    /**
+     * @param string|\Stringable|DocumentInterface|array<string|\Stringable|DocumentInterface> $values
+     * @param array<string, mixed>                                                             $options
+     *
+     * @return Vector|VectorDocument|array<Vector|VectorDocument>
+     */
     public function vectorize(string|\Stringable|DocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
     {
         if (\is_array($values)) {
@@ -58,6 +64,6 @@ final class HashingVectorizer implements VectorizerInterface
         }
         $norm = sqrt(array_sum(array_map(static fn (float $v): float => $v * $v, $vector)));
 
-        return new Vector($norm > 0.0 ? array_map(static fn (float $v): float => $v / $norm, $vector) : $vector);
+        return new Vector(array_values($norm > 0.0 ? array_map(static fn (float $v): float => $v / $norm, $vector) : $vector));
     }
 }

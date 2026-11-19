@@ -9,9 +9,8 @@ use Symfony\AI\Agent\Agent;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Symfony\AI\Agent\Toolbox\FaultTolerantToolbox;
 use Symfony\AI\Agent\Toolbox\Toolbox;
-use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\Result\ResultInterface;
+use Symfony\AI\Platform\Result\Stream\Delta\DeltaInterface;
 use Symfony\AI\Platform\Result\Stream\Delta\TextDelta;
 use Symfony\AI\Platform\Result\StreamResult;
 use Symfony\AI\Platform\Result\TextResult;
@@ -51,7 +50,7 @@ final class AgentInstrumentationTest extends TestCase
         $context->prepare('run_integration1', 'math', 'demo');
 
         $text = $agent->call('What is 6 times 7?', ['stream' => true]);
-        $streamed = implode('', array_map('strval', iterator_to_array($text->asStream(), false)));
+        $streamed = implode('', array_map(static fn (DeltaInterface $d): string => $d instanceof TextDelta ? $d->getText() : '', iterator_to_array($text->asStream(), false)));
 
         self::assertSame('The answer is 42.', $streamed);
         self::assertSame([

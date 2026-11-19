@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration;
 
-use Symfony\AI\Agent\AgentInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use XRay\Event\Envelope;
 use XRay\Recorder\RunContext;
@@ -45,7 +44,7 @@ final class McpCaptureTest extends KernelTestCase
         self::assertTrue($finished->data['ok']);
         self::assertSame('Paris', $finished->data['result']['city']);
         self::assertGreaterThan($call[1]->seq, $finished->seq);
-        self::assertSame('run.finished', end($events)->type);
+        self::assertSame('run.finished', $events[\count($events) - 1]->type);
     }
 
     public function testAnMcpErrorIsCapturedAndTheRetryRecovers(): void
@@ -58,8 +57,9 @@ final class McpCaptureTest extends KernelTestCase
         $errors = array_values(array_filter($events, static fn (Envelope $e): bool => 'mcp.frame' === $e->type && 'error' === $e->data['kind']));
         self::assertCount(1, $errors);
         self::assertSame($flaky[0]->data['callId'], $errors[0]->data['correlatesTo']);
-        self::assertTrue(end($events)->data['ok']);
-        self::assertStringContainsString('healthy', (string) end($events)->data['finalText']);
+        $finished = $events[\count($events) - 1];
+        self::assertTrue($finished->data['ok']);
+        self::assertStringContainsString('healthy', (string) $finished->data['finalText']);
     }
 
     /**
@@ -70,15 +70,9 @@ final class McpCaptureTest extends KernelTestCase
         self::bootKernel();
         $container = static::getContainer();
         $container->get(RunContext::class)->prepare($runId, null, 'demo');
-        $agent = $container->get('ai.agent.demo');
-        \assert($agent instanceof AgentInterface);
+        $container->get('ai.agent.demo')->call($prompt, ['stream' => true])->asText();
 
-        $agent->call($prompt, ['stream' => true])->asText();
-
-        $store = $container->get(TraceStore::class);
-        \assert($store instanceof TraceStore);
-
-        return $store->events($runId);
+        return $container->get(TraceStore::class)->events($runId);
     }
 
     /**

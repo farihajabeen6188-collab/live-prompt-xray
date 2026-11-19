@@ -8,7 +8,7 @@ final readonly class PromptSent implements TraceEvent
 {
     /**
      * @param list<array{role: string, content: string, truncated: bool, toolCallId?: string}> $messages
-     * @param list<array{name: string, description: string}>                                 $tools
+     * @param list<array{name: string, description: string}>                                   $tools
      */
     public function __construct(
         public array $messages,

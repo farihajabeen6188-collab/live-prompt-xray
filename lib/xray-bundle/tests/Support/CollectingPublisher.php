@@ -23,11 +23,6 @@ final class CollectingPublisher implements EventPublisher
         return true;
     }
 
-    public function topic(string $runId): string
-    {
-        return 'test/'.$runId;
-    }
-
     /**
      * @return list<string>
      */

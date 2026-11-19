@@ -59,12 +59,12 @@ final class TraceDifferTest extends TestCase
 
         $diff = new TraceDiffer()->diff($a, $a);
 
-        self::assertSame(['retrieve "refunds" → [03-refunds]', 'flaky([])', 'tool failed: HTTP 503', 'answer: Sorry.'], array_map(static fn (array $s): string => (string) $s['a']['label'], $diff['steps']));
+        self::assertSame(['retrieve "refunds" → [03-refunds]', 'flaky([])', 'tool failed: HTTP 503', 'answer: Sorry.'], array_map(static fn (array $s): string => $s['a']['label'] ?? '', $diff['steps']));
     }
 
     /**
      * @param list<array{string, array<string, mixed>}> $middle
-     * @param array<string, mixed>                       $summary
+     * @param array<string, mixed>                      $summary
      *
      * @return list<Envelope>
      */

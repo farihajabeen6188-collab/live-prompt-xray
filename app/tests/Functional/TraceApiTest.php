@@ -55,9 +55,7 @@ final class TraceApiTest extends WebTestCase
 
     private function record(string $prompt, string $tool): string
     {
-        $container = static::getContainer();
-        $recorder = $container->get(Recorder::class);
-        \assert($recorder instanceof Recorder);
+        $recorder = static::getContainer()->get(Recorder::class);
         $runId = RunContext::newRunId();
         $recorder->beginRun($runId, new RunStarted($prompt, 'demo', 'scripted', 'demo'));
         $recorder->emit(new ToolCallRequested('call_1', $tool, [], 1));

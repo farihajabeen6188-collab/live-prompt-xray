@@ -7,9 +7,9 @@ namespace XRay\Event;
 final readonly class McpFrame implements TraceEvent
 {
     /**
-     * @param 'out'|'in'                                        $direction
-     * @param 'request'|'response'|'notification'|'error'       $kind
-     * @param array<string, mixed>                              $payload
+     * @param 'out'|'in'                                  $direction
+     * @param 'request'|'response'|'notification'|'error' $kind
+     * @param array<string, mixed>                        $payload
      */
     public function __construct(
         public string $server,

@@ -14,9 +14,4 @@ final readonly class NullPublisher implements EventPublisher
     {
         return true;
     }
-
-    public function topic(string $runId): string
-    {
-        return 'xray/runs/'.$runId;
-    }
 }

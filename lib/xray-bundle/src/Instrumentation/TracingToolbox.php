@@ -10,8 +10,8 @@ use Symfony\AI\Platform\Result\ToolCall;
 use XRay\Event\RunError;
 use XRay\Event\ToolCallFinished;
 use XRay\Event\ToolCallStarted;
-use XRay\Recorder\Recorder;
 use XRay\Instrumentation\Mcp\McpToolDirectory;
+use XRay\Recorder\Recorder;
 
 /**
  * Times every tool execution and records its result or failure.

@@ -33,7 +33,7 @@ final readonly class NotesRepository
         }
         usort($hits, static fn (array $a, array $b): int => $b[0] <=> $a[0]);
 
-        return array_values(array_map(static fn (array $hit): array => $hit[1], \array_slice($hits, 0, 3)));
+        return array_map(static fn (array $hit): array => $hit[1], \array_slice($hits, 0, 3));
     }
 
     /**

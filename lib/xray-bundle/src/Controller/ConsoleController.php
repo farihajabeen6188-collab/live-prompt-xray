@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\HubInterface;
 use Twig\Environment;
+use XRay\Transport\MercurePublisher;
 
 final readonly class ConsoleController
 {
@@ -30,7 +31,7 @@ final readonly class ConsoleController
             'xray_config' => [
                 'transport' => null !== $this->hub && 'mercure' === $this->transport ? 'mercure' : 'sse',
                 'hubUrl' => 'mercure' === $this->transport ? $this->hub?->getPublicUrl() : null,
-                'topicPrefix' => 'xray/runs/',
+                'topicPrefix' => MercurePublisher::TOPIC_PREFIX,
                 'runUrl' => $this->runUrl,
             ],
             'xray_importmap' => $this->importMap(),

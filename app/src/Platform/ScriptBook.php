@@ -159,7 +159,7 @@ final class ScriptBook
         foreach (glob($this->directory.'/*.json') ?: [] as $file) {
             $script = json_decode((string) file_get_contents($file), true, 512, \JSON_THROW_ON_ERROR);
             if (\is_array($script)) {
-                /** @var array<string, mixed> $script */
+                /* @var array<string, mixed> $script */
                 $scripts[] = $script;
             }
         }

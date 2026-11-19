@@ -16,14 +16,14 @@ final class Calculator
 
     public function evaluate(string $expression): float|int
     {
-        if (!preg_match_all('/\d+(?:\.\d+)?|[-+*\/^()]|\S/', $expression, $matches) || [] === $matches[0]) {
+        if (!preg_match_all('/\d+(?:\.\d+)?|[-+*\/^()]|\S/', $expression, $matches)) {
             throw new \InvalidArgumentException('Empty expression.');
         }
         $this->tokens = $matches[0];
         $this->position = 0;
         $value = $this->sum();
-        if ($this->position < \count($this->tokens)) {
-            throw new \InvalidArgumentException(\sprintf('Unexpected "%s" in expression.', $this->tokens[$this->position]));
+        if (null !== $rest = $this->peek()) {
+            throw new \InvalidArgumentException(\sprintf('Unexpected "%s" in expression.', $rest));
         }
 
         return is_finite($value) && floor($value) === $value && abs($value) < \PHP_INT_MAX ? (int) $value : round($value, 6);

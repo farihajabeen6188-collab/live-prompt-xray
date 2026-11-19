@@ -89,6 +89,9 @@ final class TappingTransport implements HeaderAwareTransportInterface
         }
     }
 
+    /**
+     * @param 'in'|'out' $direction
+     */
     private function tap(string $data, string $direction): void
     {
         try {
@@ -103,7 +106,7 @@ final class TappingTransport implements HeaderAwareTransportInterface
             // A JSON-RPC batch is a list of messages.
             foreach (array_is_list($decoded) ? $decoded : [$decoded] as $message) {
                 if (\is_array($message)) {
-                    /** @var array<string, mixed> $message */
+                    /* @var array<string, mixed> $message */
                     $this->record($run, $message, $direction);
                 }
             }
@@ -114,6 +117,7 @@ final class TappingTransport implements HeaderAwareTransportInterface
 
     /**
      * @param array<string, mixed> $message
+     * @param 'in'|'out'           $direction
      */
     private function record(Run $run, array $message, string $direction): void
     {

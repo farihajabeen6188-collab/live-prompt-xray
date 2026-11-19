@@ -25,7 +25,8 @@ final class InstrumentationPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
-        if (!$container->hasParameter('xray.enabled') || true !== $container->getParameter('xray.enabled') || !$container->hasDefinition(Recorder::class)) {
+        // The Recorder only exists when X-Ray is enabled (see XRayBundle::loadExtension()).
+        if (!$container->hasDefinition(Recorder::class)) {
             return;
         }
 

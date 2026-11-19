@@ -1,0 +1,17 @@
+includes:
+    - app/vendor/phpstan/phpstan-symfony/extension.neon
+    - app/vendor/phpstan/phpstan-phpunit/extension.neon
+
+parameters:
+    level: 8
+    paths:
+        - app/src
+        - app/tests
+        - lib/xray-bundle/src
+        - lib/xray-bundle/tests
+        - lib/xray-bundle/config
+    bootstrapFiles:
+        - app/vendor/autoload.php
+    symfony:
+        containerXmlPath: app/var/cache/dev/App_KernelDevDebugContainer.xml
+    tmpDir: app/var/phpstan
