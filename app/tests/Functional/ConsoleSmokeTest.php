@@ -21,7 +21,8 @@ final class ConsoleSmokeTest extends WebTestCase
         foreach (['graph', 'tokens', 'inspector', 'waterfall', 'meters', 'scrub', 'runsList'] as $target) {
             self::assertSelectorExists(\sprintf('[data-xray-console-target="%s"]', $target));
         }
-        self::assertSelectorTextContains('.xr-brand', 'Live Prompt X-Ray');
+        self::assertSelectorTextContains('.brand', 'X-Ray');
+        self::assertSelectorExists('textarea[data-xray-console-target="prompt"]');
 
         $config = json_decode((string) $crawler->filter('[data-controller="xray-console"]')->attr('data-xray-console-config-value'), true, 512, \JSON_THROW_ON_ERROR);
         self::assertSame('/demo/run', $config['runUrl']);
