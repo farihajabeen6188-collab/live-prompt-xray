@@ -1,3 +1,5 @@
 # Symfony skeleton recipe placeholder APP_SECRET in app/.env.dev (dev only, never a credential), committed in
 # the Phase 0 bootstrap and deleted in Phase 9. Not worth rewriting history for.
 413902d7ae4c7954306032684ed2756f8dd2e79b:app/.env.dev:generic-api-key:3
+# Fake key in ModelConnectionTest (asserts that a saved key is never sent back to the browser); not a credential.
+6f539f1876b4d829fb6f3e0fa59b46baf7fbde5a:app/tests/Functional/ModelConnectionTest.php:generic-api-key:30
