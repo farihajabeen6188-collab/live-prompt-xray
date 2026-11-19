@@ -32,7 +32,8 @@ when@dev:
 Open **`/_xray`** and run your agent (a request, a command, a worker): the console follows every run live.
 
 While the package is not on Packagist, add the repository first:
-`composer config repositories.xray vcs https://github.com/<you>/live-prompt-xray` (or a `path` repository to `lib/xray-bundle`).
+`composer config repositories.xray path /path/to/live-prompt-xray/lib/xray-bundle` after cloning
+https://github.com/farihajabeen6188-collab/live-prompt-xray (the bundle lives in a sub-directory of the repository).
 
 ## What gets recorded
 

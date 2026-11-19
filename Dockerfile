@@ -29,3 +29,17 @@ COPY docker/entrypoint.sh /usr/local/bin/xray-entrypoint
 
 ENTRYPOINT ["sh", "/usr/local/bin/xray-entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
+
+# ---- prod: the code is baked in (used by Render, see render.yaml) ----
+FROM dev AS prod
+ENV APP_ENV=prod \
+    APP_DEBUG=0
+RUN mv "$PHP_INI_DIR/php.ini" "$PHP_INI_DIR/php.ini-development" \
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+COPY . /srv
+RUN --mount=type=cache,target=/root/.composer/cache \
+    cd /srv/app \
+    && composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --no-progress --no-scripts \
+    && php bin/console cache:clear \
+    && php bin/console asset-map:compile \
+    && mkdir -p var/xray && chmod -R a+rwX var

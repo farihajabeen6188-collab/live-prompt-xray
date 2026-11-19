@@ -16,14 +16,28 @@ final class ModelSettings
     private ?ModelConnection $connection = null;
     private bool $loaded = false;
 
+    /**
+     * @param bool $publicDemo on a public deployment nobody may connect a model: visitors could store
+     *                         keys for everyone, or make the server call arbitrary URLs
+     */
     public function __construct(
         #[Autowire('%kernel.project_dir%/var/xray/model.%kernel.environment%.json')]
         private readonly string $path,
+        #[Autowire(env: 'bool:XRAY_PUBLIC_DEMO')]
+        private readonly bool $publicDemo = false,
     ) {
+    }
+
+    public function isLocked(): bool
+    {
+        return $this->publicDemo;
     }
 
     public function connection(): ?ModelConnection
     {
+        if ($this->publicDemo) {
+            return null;
+        }
         if (!$this->loaded) {
             $this->loaded = true;
             $data = is_file($this->path) ? json_decode((string) file_get_contents($this->path), true) : null;

@@ -42,12 +42,22 @@ final readonly class ModelController
     #[Route('', methods: ['GET'])]
     public function show(): JsonResponse
     {
-        return new JsonResponse(['connected' => null !== $this->settings->connection(), 'connection' => $this->settings->connection()?->toPublicArray(), 'presets' => self::PRESETS]);
+        return new JsonResponse(['connected' => null !== $this->settings->connection(), 'connection' => $this->settings->connection()?->toPublicArray(), 'presets' => self::PRESETS, 'locked' => $this->settings->isLocked()]);
+    }
+
+    private function locked(): ?JsonResponse
+    {
+        return $this->settings->isLocked()
+            ? new JsonResponse(['ok' => false, 'error' => 'This is the public demo: connecting a model is disabled. Run X-Ray locally (docker compose up) to use your own key.'], Response::HTTP_FORBIDDEN)
+            : null;
     }
 
     #[Route('', methods: ['POST'])]
     public function save(Request $request): JsonResponse
     {
+        if (null !== $locked = $this->locked()) {
+            return $locked;
+        }
         $data = self::input($request);
         if (null === $data) {
             return new JsonResponse(['error' => 'Send {"provider", "baseUrl" (http or https), "model", "apiKey"?}.'], Response::HTTP_BAD_REQUEST);
@@ -63,6 +73,9 @@ final readonly class ModelController
     #[Route('', methods: ['DELETE'])]
     public function disconnect(): JsonResponse
     {
+        if (null !== $locked = $this->locked()) {
+            return $locked;
+        }
         $this->settings->clear();
 
         return $this->show();
@@ -74,6 +87,9 @@ final readonly class ModelController
     #[Route('/test', methods: ['POST'])]
     public function test(Request $request): JsonResponse
     {
+        if (null !== $locked = $this->locked()) {
+            return $locked;
+        }
         $data = self::input($request, requireModel: false);
         if (null === $data) {
             return new JsonResponse(['ok' => false, 'error' => 'Enter a base URL starting with http:// or https://.'], Response::HTTP_BAD_REQUEST);

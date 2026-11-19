@@ -1,0 +1,29 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# One Docker web service (FrankenPHP + its built-in Mercure hub), built from the "prod" stage.
+services:
+  - type: web
+    name: live-prompt-xray
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    dockerCommand: frankenphp run --config /etc/frankenphp/Caddyfile
+    plan: free
+    healthCheckPath: /_xray/health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: APP_ENV
+        value: prod
+      - key: APP_SECRET
+        generateValue: true
+      - key: MERCURE_JWT_SECRET
+        generateValue: true
+      # The app publishes to its own hub and the demo agent calls its own MCP server, inside the container.
+      - key: MERCURE_URL
+        value: http://localhost:10000/.well-known/mercure
+      - key: DEMO_MCP_URL
+        value: http://localhost:10000/mcp
+      # A public URL: nobody can connect a model or store an API key from the console.
+      - key: XRAY_PUBLIC_DEMO
+        value: "1"

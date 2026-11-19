@@ -7,6 +7,8 @@ a trace you can replay, export and diff.
 
 > X-Ray is to Symfony AI what the Symfony Profiler is to HTTP requests.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/farihajabeen6188-collab/live-prompt-xray)
+
 Built for the Symfony AI & MCP Hackathon 2026 on `symfony/ai-*` 1.0.0-BETA1, `symfony/mcp-bundle` 1.0.0-BETA1
 and `mcp/sdk` 0.9.
 
@@ -22,7 +24,7 @@ what happens, as it happens.
 Requirements: Docker (Docker Desktop on Windows and macOS). Nothing else, no API key.
 
 ```bash
-git clone <this repository> live-prompt-xray && cd live-prompt-xray
+git clone https://github.com/farihajabeen6188-collab/live-prompt-xray.git && cd live-prompt-xray
 docker compose up -d
 ```
 
@@ -30,6 +32,12 @@ Open **http://localhost:8090** (it redirects to the console at `/_xray`). The fi
 dependencies inside the container; `docker compose logs -f app` shows progress. Pick a scenario and press Run.
 
 `make up` (macOS/Linux) and `./dev.ps1 up` (Windows PowerShell) do the same.
+
+### Or deploy it
+
+The **Deploy to Render** button (top of this page) builds the `prod` stage of the Dockerfile from `render.yaml`
+on Render's free plan. The public deployment runs in Demo Mode with `XRAY_PUBLIC_DEMO=1`: visitors cannot connect
+a model or store an API key. Free instances sleep when idle, so the first visit takes a minute to wake up.
 
 ## What you can try
 

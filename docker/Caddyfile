@@ -3,7 +3,8 @@
 	frankenphp
 }
 
-:80 {
+# Port 80 locally; hosting platforms such as Render pass the port in $PORT.
+:{$PORT:80} {
 	root * /srv/app/public
 	encode zstd br gzip
 

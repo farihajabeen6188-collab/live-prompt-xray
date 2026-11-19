@@ -1,0 +1,9 @@
+.git
+app/vendor
+app/var
+app/public/assets
+app/.env.local
+app/.env.*.local
+lib/xray-bundle/vendor
+**/.phpunit.cache
+**/.php-cs-fixer.cache

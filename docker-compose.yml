@@ -2,7 +2,9 @@ name: live-prompt-xray
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      target: dev
     image: live-prompt-xray:dev
     ports:
       - "${XRAY_HTTP_PORT:-8090}:80"
