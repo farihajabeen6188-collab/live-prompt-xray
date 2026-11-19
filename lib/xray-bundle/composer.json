@@ -3,11 +3,20 @@
     "description": "Live Prompt X-Ray: a realtime visual debugger for Symfony AI agents and MCP.",
     "type": "symfony-bundle",
     "license": "MIT",
+    "keywords": ["symfony-ai", "mcp", "debugger", "observability", "tracing", "agents"],
     "require": {
         "php": ">=8.4",
+        "symfony/ai-agent": "^1.0@beta",
+        "symfony/ai-platform": "^1.0@beta",
+        "symfony/asset": "^7.4",
+        "symfony/asset-mapper": "^7.4",
         "symfony/framework-bundle": "^7.4",
-        "symfony/twig-bundle": "^7.4",
-        "symfony/mercure-bundle": "^0.3"
+        "symfony/twig-bundle": "^7.4"
+    },
+    "suggest": {
+        "symfony/mercure-bundle": "Push trace events through a Mercure hub (xray.transport: mercure). Without it, use xray.transport: sse.",
+        "symfony/ai-store": "Trace retrievals (decorates services tagged ai.retriever).",
+        "symfony/mcp-bundle": "Trace the JSON-RPC frames of MCP client connections."
     },
     "autoload": {
         "psr-4": { "XRay\\": "src/" }

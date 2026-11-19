@@ -80,6 +80,16 @@ final class XRayBundle extends AbstractBundle
         $container->addCompilerPass(new InstrumentationPass());
     }
 
+    /**
+     * Serves the console's CSS and ES modules through AssetMapper as "xray/…" (no build step).
+     */
+    public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
+    {
+        $builder->prependExtensionConfig('framework', [
+            'asset_mapper' => ['paths' => [\dirname(__DIR__).'/assets' => 'xray']],
+        ]);
+    }
+
     public function getPath(): string
     {
         return \dirname(__DIR__);

@@ -17,7 +17,7 @@ use Symfony\AI\Store\Document\VectorizerInterface;
 final class HashingVectorizer implements VectorizerInterface
 {
     private const int DIMENSIONS = 512;
-    private const array STOPWORDS = ['the', 'and', 'for', 'are', 'can', 'with', 'our', 'your', 'you', 'what', 'about', 'how', 'all', 'any', 'per', 'get', 'has', 'have', 'this', 'that', 'everything', 'know', 'tell'];
+    private const array STOPWORDS = ['the', 'and', 'for', 'are', 'can', 'with', 'our', 'your', 'you', 'what', 'about', 'how', 'all', 'any', 'per', 'get', 'has', 'have', 'this', 'that', 'everything', 'know', 'tell', 'eur', 'usd'];
 
     public function vectorize(string|\Stringable|DocumentInterface|array $values, array $options = []): Vector|VectorDocument|array
     {
@@ -44,7 +44,7 @@ final class HashingVectorizer implements VectorizerInterface
     {
         $counts = [];
         foreach (preg_split('/[^a-z0-9]+/', strtolower($text)) ?: [] as $word) {
-            if (\strlen($word) < 3 || \in_array($word, self::STOPWORDS, true)) {
+            if (\strlen($word) < 3 || ctype_digit($word) || \in_array($word, self::STOPWORDS, true)) {
                 continue;
             }
             $word = preg_replace('/(ies|es|s)$/', '', $word) ?? $word;

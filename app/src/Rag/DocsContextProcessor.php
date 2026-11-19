@@ -20,7 +20,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 final readonly class DocsContextProcessor implements InputProcessorInterface
 {
     /** Cosine distance: 0 is identical, 1 is unrelated. */
-    private const float MAX_DISTANCE = 0.8;
+    private const float MAX_DISTANCE = 0.78;
 
     public function __construct(
         #[Autowire(service: 'app.docs_retriever')]

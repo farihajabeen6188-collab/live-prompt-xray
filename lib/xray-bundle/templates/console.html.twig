@@ -4,8 +4,119 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Live Prompt X-Ray</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%2335e0c1' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23a98bff'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="{{ asset('xray/console.css') }}">
+    <script type="importmap">{{ xray_importmap|json_encode(constant('JSON_UNESCAPED_SLASHES'))|raw }}</script>
+    <script type="module" src="{{ asset('xray/console.js') }}"></script>
 </head>
-<body data-xray-config="{{ xray_config|json_encode|e('html_attr') }}">
-    <h1>Live Prompt X-Ray</h1>
+<body>
+<div class="xr" data-controller="xray-console" data-xray-console-config-value="{{ xray_config|json_encode|e('html_attr') }}"
+     data-action="click@window->xray-console#closeMenus keydown@window->xray-console#closeMenus">
+
+    <header class="xr-top">
+        <div class="xr-brand">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="#35e0c1" stroke-width="3"/><circle cx="16" cy="16" r="4" fill="#a98bff"/></svg>
+            <span>Live Prompt X-Ray</span>
+        </div>
+        <form class="xr-prompt" data-action="submit->xray-console#run">
+            <label class="sr-only" for="xr-prompt">Prompt</label>
+            <input id="xr-prompt" type="text" autocomplete="off" maxlength="2000" placeholder="Ask the agent something…" data-xray-console-target="prompt">
+            <button class="btn btn-primary" type="submit" data-xray-console-target="runButton">Run</button>
+        </form>
+        <div class="menu">
+            <button class="btn" type="button" aria-haspopup="true" aria-expanded="false" data-xray-console-target="scenarioButton" data-action="click->xray-console#toggleScenarios:stop">Scenario ▾</button>
+            <div class="menu-list" role="menu" hidden data-xray-console-target="scenarioMenu"></div>
+        </div>
+        <span class="badge" data-xray-console-target="modeBadge">…</span>
+        <span class="badge" data-xray-console-target="connection" title="Realtime connection"><span class="dot"></span><span>connecting</span></span>
+        <button class="btn" type="button" data-action="xray-console#openDrawer">Runs</button>
+    </header>
+
+    <div class="xr-replay" role="group" aria-label="Replay">
+        <button class="btn btn-sm" type="button" title="Replay from the start" data-action="xray-console#restart">⏮</button>
+        <button class="btn btn-sm" type="button" title="Play or pause" disabled data-xray-console-target="playButton" data-action="xray-console#togglePlay">▶</button>
+        <button class="btn btn-sm" type="button" title="Jump to the end" data-action="xray-console#toEnd">⏭</button>
+        <span class="speed" role="group" aria-label="Replay speed">
+            {% for speed in ['0.5', '1', '2', '4'] %}
+                <button type="button" data-speed="{{ speed }}" aria-pressed="{{ speed == '1' ? 'true' : 'false' }}" data-xray-console-target="speed" data-action="xray-console#setSpeed">{{ speed }}×</button>
+            {% endfor %}
+        </span>
+        <label class="sr-only" for="xr-scrub">Position</label>
+        <input id="xr-scrub" type="range" min="0" max="0" step="1" value="0" disabled data-xray-console-target="scrub" data-action="input->xray-console#scrub">
+        <span class="time" data-xray-console-target="time">—</span>
+        <span class="xr-run-label" data-xray-console-target="runLabel">no run yet</span>
+        <a class="btn btn-sm" href="#" aria-disabled="true" download data-xray-console-target="exportLink">Export</a>
+        <button class="btn btn-sm" type="button" data-action="xray-console#importClick">Import</button>
+    </div>
+
+    <main class="xr-main">
+        <section class="panel area-graph" aria-label="Live graph">
+            <div class="panel-head">Live graph
+                <span class="spacer"></span>
+                <span class="legend"><span><i style="background:var(--activity)"></i>activity</span><span><i style="background:var(--mcp)"></i>MCP</span><span><i style="background:var(--error)"></i>error</span></span>
+            </div>
+            <div class="graph" data-xray-console-target="graph"></div>
+            <div class="tooltip" hidden data-xray-console-target="tooltip"></div>
+            <div class="banner" role="alert" hidden data-xray-console-target="banner">
+                <span data-xray-console-target="bannerText"></span>
+            </div>
+            <div class="empty" data-xray-console-target="empty">
+                <div class="empty-card">
+                    <h2>Try a scenario</h2>
+                    <p>Pick one: the agent runs for real (tools, MCP server, docs store) and X-Ray shows every step as it happens.</p>
+                    <div class="scenario-grid" data-xray-console-target="scenarioGrid"></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="area-side">
+            <section class="panel" aria-label="Token stream">
+                <div class="panel-head">Token stream</div>
+                <div class="panel-body tokens" aria-live="polite" data-xray-console-target="tokens"></div>
+            </section>
+            <section class="panel" aria-label="Inspector">
+                <div class="panel-head">
+                    <div class="tabs" role="tablist">
+                        <button class="tab" role="tab" type="button" aria-selected="true" data-tab="prompt" data-xray-console-target="tab" data-action="xray-console#tab">Prompt / context</button>
+                        <button class="tab" role="tab" type="button" aria-selected="false" data-tab="tool" data-xray-console-target="tab" data-action="xray-console#tab">Tool call</button>
+                        <button class="tab" role="tab" type="button" aria-selected="false" data-tab="mcp" data-xray-console-target="tab" data-action="xray-console#tab">MCP</button>
+                    </div>
+                </div>
+                <div class="panel-body insp" data-xray-console-target="inspector"></div>
+            </section>
+        </div>
+
+        <section class="panel area-waterfall" aria-label="Waterfall timeline">
+            <div class="panel-head">Waterfall
+                <span class="spacer"></span>
+                <span class="legend"><span><i style="background:#4f8cff"></i>model</span><span><i style="background:#e0b84f"></i>retrieval</span><span><i style="background:var(--activity)"></i>tool</span><span><i style="background:var(--mcp)"></i>MCP</span></span>
+            </div>
+            <div class="panel-body wf" data-xray-console-target="waterfall"></div>
+        </section>
+
+        <section class="panel area-meters" aria-label="Meters">
+            <div class="panel-head">Meters</div>
+            <div class="meters" data-xray-console-target="meters"></div>
+        </section>
+    </main>
+
+    <aside class="drawer" aria-label="Recorded runs" inert data-xray-console-target="drawer">
+        <div class="panel-head">Recorded runs
+            <span class="spacer"></span>
+            <button class="btn btn-sm" type="button" disabled data-xray-console-target="compareButton" data-action="xray-console#compareRuns">Compare 2</button>
+            <button class="btn btn-sm" type="button" data-action="xray-console#closeDrawer">Close</button>
+        </div>
+        <div class="drawer-body" data-xray-console-target="runsList"></div>
+    </aside>
+
+    <div class="drop" hidden data-xray-console-target="drop">Drop an X-Ray trace (.json) to replay it</div>
+
+    <div class="modal" hidden role="dialog" aria-modal="true" aria-label="Run comparison" data-xray-console-target="modal">
+        <div class="modal-card">
+            <div class="panel-head">Compare runs <span class="spacer"></span><button class="btn btn-sm" type="button" data-action="xray-console#closeModal">Close</button></div>
+            <div data-xray-console-target="modalBody"></div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

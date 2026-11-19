@@ -3,7 +3,7 @@
     "order": 1,
     "title": "Umbrella in Paris",
     "prompt": "Do I need an umbrella in Paris tomorrow?",
-    "description": "One tool call through MCP: initialize, tools/list, tools/call.",
+    "description": "One tool call through a real MCP connection: handshake, tools/list, tools/call.",
     "match": "umbrella|rain",
     "variants": [
         {
