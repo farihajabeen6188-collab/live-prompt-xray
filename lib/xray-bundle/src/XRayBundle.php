@@ -21,7 +21,7 @@ final class XRayBundle extends AbstractBundle
     {
         $definition->rootNode()
             ->children()
-                ->booleanNode('enabled')->defaultTrue()->info('Set to false to remove every X-Ray service and decorator.')->end()
+                ->scalarNode('enabled')->defaultTrue()->info('Set to false to remove every X-Ray service and decorator.')->end()
                 ->enumNode('transport')->values(['mercure', 'sse'])->defaultValue('mercure')
                     ->info('"mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed).')->end()
                 ->stringNode('storage_path')->defaultValue('%kernel.project_dir%/var/xray/traces.sqlite')->end()
@@ -52,6 +52,10 @@ final class XRayBundle extends AbstractBundle
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
+        // The switch decides which services exist, so an env value ("%env(bool:XRAY_ENABLED)%") is read
+        // when the container is built: change it, then clear the cache.
+        $config['enabled'] = filter_var($builder->resolveEnvPlaceholders($config['enabled'], true), \FILTER_VALIDATE_BOOL);
+
         $container->parameters()
             ->set('xray.enabled', $config['enabled'])
             ->set('xray.transport', $config['transport'])

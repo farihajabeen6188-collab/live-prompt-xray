@@ -1,10 +1,21 @@
 ai:
-    # see https://symfony.com/doc/current/ai/components/platform.html
     platform:
-        ollama: null
+        # Live mode (XRAY_PLATFORM=ollama): a local Ollama server.
+        ollama:
+            endpoint: '%env(OLLAMA_HOST_URL)%'
 
-    # see https://symfony.com/doc/current/ai/bundles/ai-bundle.html
     agent:
-
-    # see https://symfony.com/doc/current/ai/components/store.html
-    store:
+        demo:
+            platform: 'app.platform'
+            model: '%env(XRAY_MODEL)%'
+            prompt:
+                text: |
+                    You are the assistant of the Nimbus Cloud demo. Use the tools when they help:
+                    weather, the user's notes, a calculator, a slow archive, a service checker and the Nimbus docs.
+                    Answer briefly and cite doc ids in brackets when you use the docs.
+            tools:
+                services:
+                    - { mcp_server: 'xray.demo' }
+                    - 'App\Tool\SearchDocs'
+            fault_tolerant_toolbox: true
+            max_tool_calls: 8

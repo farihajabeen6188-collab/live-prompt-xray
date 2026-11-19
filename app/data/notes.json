@@ -1,0 +1,7 @@
+[
+    {"title": "Team offsite (Friday)", "text": "Offsite in Berlin on Friday. Meet 10:00 at the Spreeblick co-working space, Holzmarktstr. 25. Bring the Q4 roadmap draft. Dinner booked for 8 people at 19:30."},
+    {"title": "Home city", "text": "I live in Paris, 11th arrondissement. Default city for weather questions: Paris."},
+    {"title": "Q4 report", "text": "Q4 report topic: annual plan growth and churn. Numbers come from the finance archive."},
+    {"title": "Service 42", "text": "Service 42 is the billing webhook relay. It sometimes answers 503 right after a deploy; a retry usually works."},
+    {"title": "Groceries", "text": "Oat milk, coffee beans, basil, two lemons."}
+]

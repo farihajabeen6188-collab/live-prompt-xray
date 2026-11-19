@@ -1,0 +1,20 @@
+{
+    "id": "friday",
+    "order": 3,
+    "title": "Plan my Friday",
+    "prompt": "Plan my Friday: weather in Berlin, my notes about the offsite, and 18% tip on 240 EUR",
+    "description": "Three tool calls requested in one turn: weather, notes and calculator.",
+    "match": "friday|offsite",
+    "variants": [
+        {
+            "turns": [
+                {"say": "I'll get the weather, your offsite notes and the tip at once.", "call": [
+                    {"tool": "get_weather", "args": {"city": "Berlin", "day": "friday"}},
+                    {"tool": "search_notes", "args": {"query": "offsite"}},
+                    {"tool": "calculate", "args": {"expression": "240 * 0.18"}}
+                ]},
+                {"say": "Your Friday: Berlin will be {{get_weather.condition}} at about {{get_weather.temperatureC}}°C ({{get_weather.chanceOfRainPercent}}% rain). Offsite: {{search_notes.0.text}} The 18% tip on 240 EUR is {{calculate.result}} EUR."}
+            ]
+        }
+    ]
+}

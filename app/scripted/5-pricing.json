@@ -1,0 +1,18 @@
+{
+    "id": "pricing",
+    "order": 5,
+    "title": "Nimbus pricing, multi-turn",
+    "prompt": "Summarize everything you know about Nimbus pricing",
+    "description": "Retrieval, then a docs search, a calculation and another search: the context grows every turn.",
+    "match": "pricing|price|cost",
+    "variants": [
+        {
+            "turns": [
+                {"say": "The plan prices are in the context. Let me look for discounts too.", "call": [{"tool": "search_docs", "args": {"query": "discount annual billing non-profit student"}}]},
+                {"say": "Annual billing saves two months. Computing the yearly Team price.", "call": [{"tool": "calculate", "args": {"expression": "49 * 10"}}]},
+                {"say": "One more search for usage charges.", "call": [{"tool": "search_docs", "args": {"query": "usage bandwidth storage billing"}}]},
+                {"say": "Nimbus pricing: Starter 9 EUR, Team 49 EUR and Scale 199 EUR per month [02-pricing]. Paying yearly saves two months, so Team costs {{calculate.result}} EUR per year. Non-profits and open source maintainers get 50% off Team, students get Starter free for a year [05-discounts]. Extra bandwidth is 0.05 EUR per GB and extra storage 0.20 EUR per GB per month [04-usage-billing]."}
+            ]
+        }
+    ]
+}

@@ -1,0 +1,22 @@
+{
+    "id": "slow-flaky",
+    "order": 4,
+    "title": "Slow tool, flaky service",
+    "prompt": "Look up the Q4 report topic and check service 42",
+    "description": "A 2-second tool and a service that fails once, then recovers on retry.",
+    "match": "q4|service 42",
+    "variants": [
+        {
+            "turns": [
+                {"say": "Looking up the Q4 report and checking service 42.", "call": [
+                    {"tool": "slow_lookup", "args": {"topic": "Q4 report"}},
+                    {"tool": "flaky_service", "args": {"id": 42}}
+                ]},
+                {"say": "{{failed flaky_service | Service 42 answered with an error. Retrying once. | Both checks are done.}}", "call": [
+                    {"tool": "flaky_service", "args": {"id": 42}, "if_failed": "flaky_service"}
+                ]},
+                {"say": "Q4 report: {{slow_lookup.summary}} Service 42 is {{flaky_service.status}} (attempt {{flaky_service.attempt}})."}
+            ]
+        }
+    ]
+}

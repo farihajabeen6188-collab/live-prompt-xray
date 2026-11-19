@@ -21,3 +21,31 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    app.platform.scripted:
+        class: App\Platform\ScriptedPlatform
+        arguments:
+            $pacingMicroseconds: '%env(int:SCRIPTED_PACING_US)%'
+        tags: [{ name: 'ai.platform', platform: 'scripted' }]
+
+    app.platform:
+        class: Symfony\AI\Platform\PlatformInterface
+        factory: ['@App\Platform\PlatformSelector', 'platform']
+
+    App\Rag\DocsStoreFactory:
+        arguments:
+            $corpusDirectory: '%kernel.project_dir%/corpus'
+
+    app.docs_store:
+        class: Symfony\AI\Store\InMemory\Store
+        factory: ['@App\Rag\DocsStoreFactory', 'create']
+
+    app.docs_retriever:
+        class: App\Rag\DocsRetriever
+        arguments: ['@app.docs_store']
+        tags:
+            - ai.retriever: { name: 'nimbus-docs' }
+
+    App\Platform\PlatformSelector:
+        arguments:
+            $platforms: !service_locator { demo: '@app.platform.scripted', ollama: '@ai.platform.ollama' }

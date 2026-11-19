@@ -1,0 +1,24 @@
+{
+    "id": "umbrella",
+    "order": 1,
+    "title": "Umbrella in Paris",
+    "prompt": "Do I need an umbrella in Paris tomorrow?",
+    "description": "One tool call through MCP: initialize, tools/list, tools/call.",
+    "match": "umbrella|rain",
+    "variants": [
+        {
+            "when": "paris",
+            "turns": [
+                {"say": "Let me check the forecast for Paris.", "call": [{"tool": "get_weather", "args": {"city": "Paris", "day": "tomorrow"}}]},
+                {"say": "Tomorrow in Paris: {{get_weather.condition}}, around {{get_weather.temperatureC}}°C with a {{get_weather.chanceOfRainPercent}}% chance of rain. {{when get_weather.chanceOfRainPercent >= 50 | Yes, take an umbrella. | You can leave the umbrella at home.}}"}
+            ]
+        },
+        {
+            "turns": [
+                {"say": "You didn't say where. Let me check your notes for your home city.", "call": [{"tool": "search_notes", "args": {"query": "home city"}}]},
+                {"say": "Your notes say you live in Paris. Checking the forecast there.", "call": [{"tool": "get_weather", "args": {"city": "Paris", "day": "tomorrow"}}]},
+                {"say": "In Paris tomorrow: {{get_weather.condition}}, {{get_weather.chanceOfRainPercent}}% chance of rain. {{when get_weather.chanceOfRainPercent >= 50 | Take an umbrella. | No umbrella needed.}}"}
+            ]
+        }
+    ]
+}

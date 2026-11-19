@@ -1,0 +1,13 @@
+xray:
+    # Read when the container is built: after changing XRAY_ENABLED, clear the cache.
+    enabled: '%env(XRAY_ENABLED)%'
+    transport: mercure
+    run_url: '/demo/run'
+    # USD per 1M tokens. The scripted model has no price, so Demo Mode shows no cost estimate.
+    prices: {}
+
+when@test:
+    xray:
+        enabled: true
+        transport: sse
+        storage_path: '%kernel.project_dir%/var/xray/test.sqlite'

@@ -1956,7 +1956,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     enable_profiler?: bool|Param, // Deprecated: The child node "enable_profiler" at path "mercure.enable_profiler" is deprecated. // Enable Symfony Web Profiler integration.
  * }
  * @psalm-type XrayConfig = array{
- *     enabled?: bool|Param, // Set to false to remove every X-Ray service and decorator. // Default: true
+ *     enabled?: scalar|Param|null, // Set to false to remove every X-Ray service and decorator. // Default: true
  *     transport?: "mercure"|"sse"|Param, // "mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed). // Default: "mercure"
  *     storage_path?: string|Param, // Default: "%kernel.project_dir%/var/xray/traces.sqlite"
  *     redact_keys?: list<scalar|Param|null>,

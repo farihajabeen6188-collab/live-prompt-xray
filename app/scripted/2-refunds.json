@@ -1,0 +1,15 @@
+{
+    "id": "refunds",
+    "order": 2,
+    "title": "Refund policy (RAG)",
+    "prompt": "What is our refund policy for annual plans?",
+    "description": "Retrieval from the docs store; the matching snippet is injected into the prompt and cited.",
+    "match": "refund",
+    "variants": [
+        {
+            "turns": [
+                {"say": "Annual plans can be refunded in full within 30 days of purchase [03-refunds]. After 30 days you get a pro rata refund for the unused full months, minus a 10% processing fee, paid back to the original payment method within 10 business days [03-refunds]."}
+            ]
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "id": "fallback",
+    "order": 99,
+    "title": "",
+    "prompt": "",
+    "variants": [
+        {
+            "turns": [
+                {"say": "I'm the scripted demo model, so I only know the five demo scenarios: the umbrella in Paris, the refund policy, planning Friday, the Q4 report with service 42, and Nimbus pricing. Pick one from the scenario menu, or switch to a live model."}
+            ]
+        }
+    ]
+}
