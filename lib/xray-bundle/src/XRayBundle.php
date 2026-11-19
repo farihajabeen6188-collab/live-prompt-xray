@@ -22,8 +22,8 @@ final class XRayBundle extends AbstractBundle
         $definition->rootNode()
             ->children()
                 ->scalarNode('enabled')->defaultTrue()->info('Set to false to remove every X-Ray service and decorator.')->end()
-                ->enumNode('transport')->values(['mercure', 'sse'])->defaultValue('mercure')
-                    ->info('"mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed).')->end()
+                ->enumNode('transport')->values(['auto', 'mercure', 'sse'])->defaultValue('auto')
+                    ->info('"mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed); "auto" picks mercure when MercureBundle is enabled.')->end()
                 ->stringNode('storage_path')->defaultValue('%kernel.project_dir%/var/xray/traces.sqlite')->end()
                 ->arrayNode('redact_keys')
                     ->info('Values under these keys never leave the process. Matching ignores case, "-" and "_", and also hits suffixes ("token" hides "access_token").')
@@ -55,6 +55,9 @@ final class XRayBundle extends AbstractBundle
         // The switch decides which services exist, so an env value ("%env(bool:XRAY_ENABLED)%") is read
         // when the container is built: change it, then clear the cache.
         $config['enabled'] = filter_var($builder->resolveEnvPlaceholders($config['enabled'], true), \FILTER_VALIDATE_BOOL);
+        if ('auto' === $config['transport']) {
+            $config['transport'] = $builder->hasExtension('mercure') ? 'mercure' : 'sse';
+        }
 
         $container->parameters()
             ->set('xray.enabled', $config['enabled'])
@@ -85,8 +88,10 @@ final class XRayBundle extends AbstractBundle
      */
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
     {
+        // FrameworkBundle only enables assets on its own when symfony/asset is a root dependency.
         $builder->prependExtensionConfig('framework', [
-            'asset_mapper' => ['paths' => [\dirname(__DIR__).'/assets' => 'xray']],
+            'assets' => ['enabled' => true],
+            'asset_mapper' => ['enabled' => true, 'paths' => [\dirname(__DIR__).'/assets' => 'xray']],
         ]);
     }
 

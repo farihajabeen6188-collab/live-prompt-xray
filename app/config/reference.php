@@ -1957,7 +1957,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * }
  * @psalm-type XrayConfig = array{
  *     enabled?: scalar|Param|null, // Set to false to remove every X-Ray service and decorator. // Default: true
- *     transport?: "mercure"|"sse"|Param, // "mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed). // Default: "mercure"
+ *     transport?: "auto"|"mercure"|"sse"|Param, // "mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed); "auto" picks mercure when MercureBundle is enabled. // Default: "auto"
  *     storage_path?: string|Param, // Default: "%kernel.project_dir%/var/xray/traces.sqlite"
  *     redact_keys?: list<scalar|Param|null>,
  *     run_url?: string|Param, // Endpoint of your app that starts an agent run (GET lists scenarios, POST runs a prompt). Without it the console is a viewer. // Default: null
