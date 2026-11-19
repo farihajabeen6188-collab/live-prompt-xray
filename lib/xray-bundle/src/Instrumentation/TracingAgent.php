@@ -66,12 +66,15 @@ final readonly class TracingAgent implements AgentInterface
         $finalText = null;
         try {
             foreach ($execution as $update) {
-                if ($update instanceof ResultUpdate && $update->getResult() instanceof TextResult) {
-                    $finalText = $update->getResult()->getContent();
+                if ($update instanceof ResultUpdate) {
+                    // The final answer: a caller reading only the result stops iterating here.
+                    $ok = true;
+                    if ($update->getResult() instanceof TextResult) {
+                        $finalText = $update->getResult()->getContent();
+                    }
                 }
                 yield $update;
             }
-            $ok = true;
         } catch (\Throwable $e) {
             $this->recorder->emit(new RunError('agent', $e->getMessage()));
             throw $e;
