@@ -1,0 +1,3 @@
+# Symfony skeleton recipe placeholder APP_SECRET in app/.env.dev (dev only, never a credential), committed in
+# the Phase 0 bootstrap and deleted in Phase 9. Not worth rewriting history for.
+413902d7ae4c7954306032684ed2756f8dd2e79b:app/.env.dev:generic-api-key:3
