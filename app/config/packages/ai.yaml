@@ -1,6 +1,7 @@
 ai:
     # see https://symfony.com/doc/current/ai/components/platform.html
     platform:
+        ollama: null
 
     # see https://symfony.com/doc/current/ai/bundles/ai-bundle.html
     agent:

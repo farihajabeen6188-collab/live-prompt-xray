@@ -8,6 +8,10 @@ use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
+use XRay\DependencyInjection\InstrumentationPass;
+use XRay\Transport\EventPublisher;
+use XRay\Transport\MercurePublisher;
+use XRay\Transport\NullPublisher;
 
 final class XRayBundle extends AbstractBundle
 {
@@ -18,19 +22,58 @@ final class XRayBundle extends AbstractBundle
         $definition->rootNode()
             ->children()
                 ->booleanNode('enabled')->defaultTrue()->info('Set to false to remove every X-Ray service and decorator.')->end()
+                ->enumNode('transport')->values(['mercure', 'sse'])->defaultValue('mercure')
+                    ->info('"mercure" pushes events through a Mercure hub; "sse" streams them from the trace store (no hub needed).')->end()
+                ->stringNode('storage_path')->defaultValue('%kernel.project_dir%/var/xray/traces.sqlite')->end()
+                ->arrayNode('redact_keys')
+                    ->info('Values under these keys never leave the process. Matching ignores case, "-" and "_", and also hits suffixes ("token" hides "access_token").')
+                    ->scalarPrototype()->end()
+                    ->defaultValue(['api_key', 'apikey', 'authorization', 'token', 'secret', 'password'])
+                ->end()
+                ->stringNode('run_url')->defaultNull()
+                    ->info('Endpoint of your app that starts an agent run (GET lists scenarios, POST runs a prompt). Without it the console is a viewer.')->end()
+                ->integerNode('max_string_bytes')->min(256)->defaultValue(8192)->info('Longer strings are truncated in traces.')->end()
+                ->arrayNode('prices')
+                    ->info('USD per 1M tokens, keyed by model name, to estimate cost: { "gpt-4o": { input: 2.5, output: 10 } }.')
+                    ->useAttributeAsKey('model')
+                    ->arrayPrototype()
+                        ->children()
+                            ->floatNode('input')->isRequired()->end()
+                            ->floatNode('output')->isRequired()->end()
+                        ->end()
+                    ->end()
+                    ->defaultValue([])
+                ->end()
             ->end();
     }
 
     /**
-     * @param array{enabled: bool} $config
+     * @param array{enabled: bool, transport: string, storage_path: string, run_url: ?string, redact_keys: list<string>, max_string_bytes: int, prices: array<string, array{input: float, output: float}>} $config
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        $container->parameters()->set('xray.enabled', $config['enabled']);
+        $container->parameters()
+            ->set('xray.enabled', $config['enabled'])
+            ->set('xray.transport', $config['transport'])
+            ->set('xray.storage_path', $config['storage_path'])
+            ->set('xray.redact_keys', $config['redact_keys'])
+            ->set('xray.max_string_bytes', $config['max_string_bytes'])
+            ->set('xray.prices', $config['prices'])
+            ->set('xray.run_url', $config['run_url']);
+
         if (!$config['enabled']) {
             return;
         }
         $container->import('../config/services.php');
+
+        $publisher = 'mercure' === $config['transport'] ? MercurePublisher::class : NullPublisher::class;
+        $container->services()->set('xray.publisher', $publisher)->autowire();
+        $container->services()->alias(EventPublisher::class, 'xray.publisher');
+    }
+
+    public function build(ContainerBuilder $container): void
+    {
+        $container->addCompilerPass(new InstrumentationPass());
     }
 
     public function getPath(): string
