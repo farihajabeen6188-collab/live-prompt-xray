@@ -46,6 +46,20 @@ Versions: `symfony/ai-*` 1.0.0-BETA1, `symfony/mcp-bundle` 1.0.0-BETA1, `mcp/sdk
 - Workaround: a small `RetrieverInterface` that issues a plain `VectorQuery` (`app/src/Rag/DocsRetriever.php`).
 - Suggestion: make the query type an explicit option, or document the hybrid fallback on `Retriever`.
 
+## 2026-11-19 Messages: `MessageBag::getUserMessage()` returns the *first* user message
+- What I tried: read "the user's question" in an input processor (RAG) and in the agent decorator.
+- What happened: in a conversation (history + new message) it returns the first user message of the bag, so the
+  RAG processor searched the docs for the opening question and the trace showed the wrong prompt.
+- Workaround: iterate `getMessages()` and keep the last `UserMessage`.
+- Suggestion: a `getLastUserMessage()` (or document that `getUserMessage()` means the first one).
+
+## 2026-11-19 Agent: input processors make a great dry run
+- What worked: an `Input` + the agent's tagged `ai.agent.input_processor` services (sorted by priority) rebuild the
+  exact context the model would get, without calling it. X-Ray uses that for its typing preview.
+- What was missing: the processor list per agent is only reachable at compile time (tags); a public
+  "processors of agent X" accessor would make this trivial. `ModelOverrideInputProcessor` exists but the bundle does
+  not register it; we register it ourselves to pick the model per call.
+
 ## 2026-11-19 Agent: `getModel()` is not on `AgentInterface`
 - What happened: `Agent::getModel()` exists, but `AgentInterface` (and `TraceableAgent`) don't expose it,
   so a decorator has to `method_exists()` to label a run with its model.

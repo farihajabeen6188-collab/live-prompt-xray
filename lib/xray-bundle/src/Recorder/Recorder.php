@@ -56,6 +56,11 @@ final readonly class Recorder
                 return;
             }
             $envelope = new Envelope($run->id, $run->nextSeq(), $run->elapsedMs($this->context->now()), $event->type(), $this->redactor->redact($event->data()));
+            if ($run->preview) {
+                $run->captured[] = $envelope->toArray();
+
+                return;
+            }
             $this->guard(fn () => $this->store->append($envelope), 'store');
             $this->guard(fn () => $this->publisher->publish($run->id, $envelope->toArray()), 'transport');
         });

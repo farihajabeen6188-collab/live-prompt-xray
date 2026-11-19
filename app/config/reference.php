@@ -1945,6 +1945,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     redact_keys?: list<scalar|Param|null>,
  *     run_url?: string|Param, // Endpoint of your app that starts an agent run (GET lists scenarios, POST runs a prompt). Without it the console is a viewer. // Default: null
  *     max_string_bytes?: int|Param, // Longer strings are truncated in traces. // Default: 8192
+ *     context_window?: int|Param, // Context window (tokens) the typing preview measures the prompt against. // Default: 128000
  *     prices?: array<string, array{ // Default: []
  *         input?: float|Param,
  *         output?: float|Param,

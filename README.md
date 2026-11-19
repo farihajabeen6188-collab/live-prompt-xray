@@ -33,40 +33,46 @@ dependencies inside the container; `docker compose logs -f app` shows progress. 
 
 ## What you can try
 
-| Scenario | What it shows |
-|---|---|
-| **Umbrella in Paris** | One tool call through a real MCP connection: the handshake, `tools/list`, `tools/call`, the answer built from the tool's result. |
-| **Refund policy (RAG)** | Retrieval from the docs store with scores; the matching snippet is injected into the prompt (highlighted in the context inspector) and cited. |
-| **Plan my Friday** | Three tool calls requested in one turn: weather, notes, calculator. |
-| **Slow tool, flaky service** | A 2-second bar on the waterfall, a red MCP error, the retry, the recovery. |
-| **Nimbus pricing, multi-turn** | Retrieval, a local docs-search tool, a calculation, another search: watch the context and the token meter grow. |
+**1. Just start typing.** Before you send anything, the **pre-flight X-Ray** reads your draft on every keystroke:
+it runs the agent's real input processors (system prompt, RAG) without calling the model and shows
+
+- the exact context the model will receive, as a budget bar: your message, the conversation so far, what each
+  processor added (`SystemPrompt +61`, `DocsContext +158`…) and the tool definitions, against the context window;
+- the documents the retrieval finds, with their distances, and which ones get injected into the prompt;
+- the tool calls the model will make (exact in Demo Mode, e.g. `calculate("240 * 0.18")`) or, with a real model,
+  the tools ranked by keyword match;
+- a ghost graph: every tool and store the agent has, the planned path highlighted and pulsing.
+
+**2. Send it.** Watch the agent think live: packets fly to the model, the docs store, local tools and the MCP
+server; the answer streams; every step lands on the waterfall; the real JSON-RPC frames are one click away.
+
+**3. Keep talking.** It is a chat: each follow-up carries the conversation, and the X-Ray shows it growing in the
+context. **New chat** starts over.
+
+Things to type in Demo Mode (no key needed): *"What's the weather in Tokyo on Saturday and what is 15% tip on 86?"*
+(two tools at once), *"Will it rain in Lahore today? Also check service 7"* (a failure, a retry, the recovery),
+*"Do I need an umbrella?"* (no city: it reads your notes first), *"What is our refund policy for annual plans?"*
+(RAG with citations), or pick a showcase from **Scenario**.
 
 Then open **Runs** to replay a run at 0.5x–4x (with a scrub bar), export it as JSON, drop a trace file on the
 page to import it, or tick two runs and **Compare** them. Try *"Do I need an umbrella?"* against *"Do I need an
 umbrella in Paris tomorrow?"*: the diff shows where the runs diverge and what it cost.
 
-## Demo mode and live mode
+## Demo model or any real model
 
-**Demo mode** (default) needs no key: only the model is scripted. `ScriptedPlatform` is a real Symfony AI
-`PlatformInterface` that streams tokens and requests tool calls from small JSON scripts (`app/scripted/`), and
-writes its answers from the *real* tool results. The agent, toolbox, MCP client and server, docs store, recorder
-and UI are all real. The console says so ("Demo mode: scripted model"), and token counts are marked as estimates
-because a scripted model has no tokenizer.
+**Demo Mode** (default) needs no key: only the model is simulated. `ScriptedPlatform` is a real Symfony AI
+`PlatformInterface`; for any prompt a rules-based planner (`app/src/Platform/DemoPlanner.php`) picks the tools
+(several at once when you ask for several things), reacts to their real results (retries failures, follows up on
+what your notes say) and writes the answer from them. The agent, toolbox, MCP client and server, docs store,
+recorder and UI are all real. The console says so ("Demo mode: scripted model"), and token counts are marked as
+estimates because rules have no tokenizer.
 
-**Live mode** runs the same agent against a real local model through Ollama:
-
-```bash
-ollama pull qwen3:4b          # any Ollama model with tool calling
-```
-
-```dotenv
-# app/.env.local
-XRAY_PLATFORM=ollama
-XRAY_MODEL=qwen3:4b
-OLLAMA_HOST_URL=http://host.docker.internal:11434
-```
-
-Live traces vary from run to run, which is the point of having a debugger.
+**Connect a real model** from the console: click the model badge at the top, pick a provider (OpenAI,
+OpenRouter, Groq, Google Gemini, Mistral, DeepSeek, Together, or a local Ollama / LM Studio), paste a key,
+**Test connection** (it lists the models the key can use), **Save and use**. Any OpenAI-compatible chat API
+works through Symfony AI's generic bridge; the key is stored on the server (in the Docker volume, never in git)
+and never sent back to the browser. Real providers report real token usage, so the token meters stop being
+estimates. **Back to the demo model** disconnects.
 
 ## Add X-Ray to your own Symfony AI app
 

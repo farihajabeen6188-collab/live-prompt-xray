@@ -40,6 +40,17 @@ final class ScriptBook
         ], array_values(array_filter($this->scripts(), static fn (array $s): bool => '' !== ($s['prompt'] ?? ''))));
     }
 
+    /**
+     * Whether the prompt is one of the showcase scenarios, word for word (case and punctuation aside).
+     * Every other prompt is planned by the DemoPlanner.
+     */
+    public function isScenarioPrompt(string $prompt): bool
+    {
+        $normalize = static fn (string $text): string => trim((string) preg_replace('/[^a-z0-9%]+/', ' ', strtolower($text)));
+
+        return \in_array($normalize($prompt), array_map(static fn (array $s): string => $normalize($s['prompt']), $this->scenarios()), true);
+    }
+
     public function scenarioFor(string $prompt): ?string
     {
         $script = $this->scriptFor($prompt);

@@ -20,14 +20,14 @@
         </div>
         <form class="xr-prompt" data-action="submit->xray-console#run">
             <label class="sr-only" for="xr-prompt">Prompt</label>
-            <input id="xr-prompt" type="text" autocomplete="off" maxlength="2000" placeholder="Ask the agent something…" data-xray-console-target="prompt">
-            <button class="btn btn-primary" type="submit" data-xray-console-target="runButton">Run</button>
+            <input id="xr-prompt" type="text" autocomplete="off" maxlength="2000" placeholder="Type a message: the X-Ray reads it as you type…" data-xray-console-target="prompt" data-action="input->xray-console#typing">
+            <button class="btn btn-primary" type="submit" data-xray-console-target="runButton">Send</button>
         </form>
         <div class="menu">
             <button class="btn" type="button" aria-haspopup="true" aria-expanded="false" data-xray-console-target="scenarioButton" data-action="click->xray-console#toggleScenarios:stop">Scenario ▾</button>
             <div class="menu-list" role="menu" hidden data-xray-console-target="scenarioMenu"></div>
         </div>
-        <span class="badge" data-xray-console-target="modeBadge">…</span>
+        <button class="badge badge-button" type="button" title="Choose the model" hidden data-xray-console-target="modelButton" data-action="xray-console#openModel"><span data-xray-console-target="modeBadge">…</span> ▾</button>
         <span class="badge" data-xray-console-target="connection" title="Realtime connection"><span class="dot"></span><span>connecting</span></span>
         <button class="btn" type="button" data-action="xray-console#openDrawer">Runs</button>
     </header>
@@ -71,7 +71,10 @@
 
         <div class="area-side">
             <section class="panel" aria-label="Token stream">
-                <div class="panel-head">Token stream</div>
+                <div class="panel-head"><span data-xray-console-target="tokensTitle">Token stream</span>
+                    <span class="spacer"></span>
+                    <button class="btn btn-sm" type="button" hidden data-xray-console-target="newChat" data-action="xray-console#newChat">New chat</button>
+                </div>
                 <div class="panel-body tokens" aria-live="polite" data-xray-console-target="tokens"></div>
             </section>
             <section class="panel" aria-label="Inspector">
@@ -110,6 +113,35 @@
     </aside>
 
     <div class="drop" hidden data-xray-console-target="drop">Drop an X-Ray trace (.json) to replay it</div>
+
+    <div class="modal" hidden role="dialog" aria-modal="true" aria-label="Connect a model" data-xray-console-target="modelModal">
+        <form class="modal-card model-card" data-action="submit->xray-console#saveModel">
+            <div class="panel-head">Connect a model <span class="spacer"></span><button class="btn btn-sm" type="button" data-action="xray-console#closeModel">Close</button></div>
+            <div class="model-form">
+                <p class="muted">Any OpenAI-compatible chat API works: pick a provider, paste a key, test, save. The key stays on the server.</p>
+                <label>Provider
+                    <select data-xray-console-target="modelProvider" data-action="change->xray-console#pickPreset"></select>
+                </label>
+                <label>Base URL
+                    <input type="url" required autocomplete="off" spellcheck="false" placeholder="https://api.example.com/v1" data-xray-console-target="modelBaseUrl">
+                </label>
+                <label>API key
+                    <input type="password" autocomplete="off" spellcheck="false" data-xray-console-target="modelKey">
+                </label>
+                <label>Model
+                    <input type="text" required autocomplete="off" spellcheck="false" list="xr-models" placeholder="model name" data-xray-console-target="modelName">
+                    <datalist id="xr-models" data-xray-console-target="modelList"></datalist>
+                </label>
+                <div class="model-status" role="status" data-xray-console-target="modelStatus"></div>
+                <div class="model-actions">
+                    <button class="btn" type="button" data-action="xray-console#testModel">Test connection</button>
+                    <button class="btn btn-primary" type="submit">Save and use</button>
+                    <span class="spacer"></span>
+                    <button class="btn" type="button" hidden data-xray-console-target="modelDisconnect" data-action="xray-console#disconnectModel">Back to the demo model</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
     <div class="modal" hidden role="dialog" aria-modal="true" aria-label="Run comparison" data-xray-console-target="modal">
         <div class="modal-card">

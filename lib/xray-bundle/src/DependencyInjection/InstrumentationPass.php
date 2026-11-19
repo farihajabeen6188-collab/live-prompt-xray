@@ -14,6 +14,7 @@ use XRay\Instrumentation\TracingAgent;
 use XRay\Instrumentation\TracingPlatform;
 use XRay\Instrumentation\TracingRetriever;
 use XRay\Instrumentation\TracingToolbox;
+use XRay\Preview\PromptPreviewer;
 use XRay\Pricing\CostEstimator;
 use XRay\Recorder\Recorder;
 
@@ -54,6 +55,42 @@ final class InstrumentationPass implements CompilerPassInterface
             $server = \is_string($tags[0]['server'] ?? null) ? $tags[0]['server'] : $id;
             $this->decorate($container, $id.'.transport', 'mcp_transport', new Definition(TappingTransport::class, [new Reference('.inner'), $recorder, $server, new Reference(McpToolDirectory::class)]));
         }
+
+        $this->configurePreview($container);
+    }
+
+    /**
+     * Gives the previewer, per agent, the same input processors the agent runs (same order) and its toolbox.
+     */
+    private function configurePreview(ContainerBuilder $container): void
+    {
+        if (!$container->hasDefinition(PromptPreviewer::class)) {
+            return;
+        }
+
+        $processors = [];
+        foreach ($container->findTaggedServiceIds('ai.agent.input_processor') as $id => $tags) {
+            $explicit = array_values(array_filter($tags, static fn (array $tag): bool => !isset($tag['tagged_by'])));
+            $tag = $explicit[0] ?? $tags[0] ?? [];
+            $processors[] = ['id' => $id, 'agent' => \is_string($tag['agent'] ?? null) ? $tag['agent'] : null, 'priority' => \is_int($tag['priority'] ?? null) ? $tag['priority'] : 0];
+        }
+
+        $agents = [];
+        foreach ($container->findTaggedServiceIds('ai.agent') as $id => $tags) {
+            $name = \is_string($tags[0]['name'] ?? null) ? $tags[0]['name'] : $id;
+            $mine = array_values(array_filter($processors, static fn (array $p): bool => null === $p['agent'] || $p['agent'] === $id));
+            usort($mine, static fn (array $a, array $b): int => $b['priority'] <=> $a['priority']);
+            $arguments = $container->getDefinition($id)->getArguments();
+            $model = $arguments['$model'] ?? $arguments[1] ?? 'unknown';
+            $toolbox = 'ai.toolbox.'.$name;
+            $agents[$name] = [
+                'agent' => new Reference($id),
+                'model' => \is_string($model) ? $model : 'unknown',
+                'processors' => array_map(static fn (array $p): Reference => new Reference($p['id']), $mine),
+                'toolbox' => $container->has($toolbox) ? new Reference($toolbox) : null,
+            ];
+        }
+        $container->getDefinition(PromptPreviewer::class)->setArgument('$agents', $agents);
     }
 
     private function decorate(ContainerBuilder $container, string $id, string $kind, Definition $decorator): void

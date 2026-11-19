@@ -18,11 +18,12 @@ Status as of 2026-11-19. A box is ticked only when the check was actually run.
   streamed, console and all modules 200; checked over HTTP, not in a browser).
 - [x] Recorder failure never breaks an agent run (`RecorderTest`, `AgentInstrumentationTest::testTheAgentRunsUnchangedWhenTheRecorderCannotPublish`).
 - [x] Secrets redacted by default (`RedactorTest`, `RecorderTest::testSecretsAreRedactedBeforeStorageAndTransport`).
-- [x] `make stan cs test` green (`./dev.ps1 stan cs test`: PHPStan level 8 no errors, CS clean, 42 tests).
+- [x] `make stan cs test` green (`./dev.ps1 stan cs test`: PHPStan level 8 no errors, CS clean, 59 tests).
 - [~] `docs/FEEDBACK.md` has real notes on Symfony AI + PHP MCP SDK. Upstream issues **not opened** (needs your GitHub account).
 - [x] README: what/why, quickstart, demo vs live model, bundle install, Mermaid architecture, security notes.
-- [ ] Live mode with a real model: wired (`XRAY_PLATFORM=ollama`) but **not run**: the local Ollama has no model
-  pulled. `ollama pull qwen3:4b` (or similar, several GB) then try it before mentioning it in the video.
+- [ ] A real model end to end: connecting any OpenAI-compatible API from the console works up to the connection
+  test (verified against the local Ollama: reached in 53 ms, 0 models). **No real model has answered yet**: no API key
+  here and no Ollama model pulled. Connect one before mentioning it in the video.
 - [ ] 90-second video recorded, uploaded, link tested. **Needs you** (script: `docs/VIDEO_SCRIPT.md`).
 - [x] No secrets in git history (gitleaks: only the Symfony recipe's dev placeholder `APP_SECRET`, documented in
   `.gitleaksignore`).

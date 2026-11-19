@@ -27,8 +27,9 @@ live-prompt-xray/
 │   │   ├── Storage/{TraceStore,SqliteTraceStore,RunRecord}.php
 │   │   ├── Replay/TraceFile.php        # export/import format
 │   │   ├── Diff/TraceDiffer.php
+│   │   ├── Preview/{PromptPreviewer,ToolPlanProvider}.php   # the typing preview
 │   │   ├── Pricing/CostEstimator.php
-│   │   └── Controller/{ConsoleController,StreamController,TraceController}.php
+│   │   └── Controller/{ConsoleController,StreamController,TraceController,PreviewController}.php
 │   ├── templates/console.html.twig
 │   ├── assets/                         # console.css, console.js, controllers/, lib/ (graph, trace,
 │   │                                   # views, player, diff), vendor/stimulus.js
@@ -36,12 +37,14 @@ live-prompt-xray/
 ├── app/                                # the demo app
 │   ├── config/packages/{ai,mcp,xray,mercure}.yaml
 │   ├── src/
-│   │   ├── Platform/{ScriptedPlatform,ScriptBook,ScriptedTurn,PassThroughConverter,PlatformSelector}.php
+│   │   ├── Platform/{ScriptedPlatform,DemoPlanner,ScriptBook,ScriptedTurn,PassThroughConverter,
+│   │   │             SwitchablePlatform,DemoPlanPreview}.php
+│   │   ├── Model/{ModelSettings,ModelConnection}.php   # the model connected in the console
 │   │   ├── Mcp/DemoTools.php           # 5 #[McpTool]s served at /mcp
 │   │   ├── Demo/{WeatherService,NotesRepository,Calculator}.php
 │   │   ├── Rag/{HashingVectorizer,DocsStoreFactory,DocsRetriever,DocsContextProcessor}.php
 │   │   ├── Tool/SearchDocs.php         # a local (non-MCP) tool
-│   │   └── Controller/{RunController,HomeController}.php
+│   │   └── Controller/{RunController,ModelController,HomeController}.php
 │   ├── scripted/*.json                 # one script per scenario for the scripted model
 │   ├── corpus/*.md                     # 10 Nimbus Cloud docs for RAG
 │   ├── data/notes.json
@@ -106,5 +109,16 @@ flowchart LR
   through an import map the console renders itself, and Stimulus is vendored in the bundle, so a host app needs
   no `importmap.php` or `controllers.json` change. Turbo is not used: the console is a single page.
   SVG/CSS animation, `requestAnimationFrame` batching, `prefers-reduced-motion` respected.
+- **Pre-flight preview.** `PromptPreviewer` runs an agent's own input processors (wired per agent by
+  `InstrumentationPass` from the `ai.agent.input_processor` tags) inside a *preview run*: `RunContext::beginPreview()`
+  makes the `Recorder` keep events in memory instead of storing and publishing them, so the existing decorators
+  report the retrievals and MCP traffic of the dry run. The console calls it on every keystroke (debounced, the
+  previous request aborted) and draws a ghost graph of the planned path. Demo Mode's planner provides the exact
+  tool plan through `ToolPlanProvider`.
+- **Chat.** The console keeps the conversation and sends it as `history`; the run endpoint builds a `MessageBag`
+  (history + new message). The trace and the preview show the conversation's share of the context.
+- **Any model.** `SwitchablePlatform` (tagged `ai.platform`, so traced) answers with the scripted model or, once a
+  model is connected in the console, with any OpenAI-compatible API through `Symfony\AI\Platform\Bridge\Generic\Factory`.
+  `ModelOverrideInputProcessor` passes the chosen model name, so traces show it.
 - **Disable switch.** `xray.enabled: false` (or `XRAY_ENABLED=0`, read when the container is built) removes all
   X-Ray services and decorators.

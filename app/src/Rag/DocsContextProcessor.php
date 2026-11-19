@@ -8,6 +8,7 @@ use Symfony\AI\Agent\Attribute\AsInputProcessor;
 use Symfony\AI\Agent\Input;
 use Symfony\AI\Agent\InputProcessorInterface;
 use Symfony\AI\Platform\Message\Message;
+use Symfony\AI\Platform\Message\UserMessage;
 use Symfony\AI\Store\Document\VectorDocumentInterface;
 use Symfony\AI\Store\RetrieverInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -31,7 +32,13 @@ final readonly class DocsContextProcessor implements InputProcessorInterface
     public function processInput(Input $input): void
     {
         $messages = $input->getMessageBag();
-        $question = $messages->getUserMessage()?->asText();
+        // The latest user message (MessageBag::getUserMessage() returns the first one of a conversation).
+        $question = null;
+        foreach ($messages->getMessages() as $message) {
+            if ($message instanceof UserMessage) {
+                $question = $message->asText();
+            }
+        }
         if (null === $question || '' === trim($question)) {
             return;
         }

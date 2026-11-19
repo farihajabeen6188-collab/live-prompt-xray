@@ -54,6 +54,14 @@ final class RunContext implements ResetInterface
         return $this->run = new Run($runId, $model, $this->now());
     }
 
+    /**
+     * Starts a dry run: the decorators record as usual, the Recorder keeps the events in memory.
+     */
+    public function beginPreview(string $model): Run
+    {
+        return $this->run = new Run('preview', $model, $this->now(), true);
+    }
+
     public function current(): ?Run
     {
         return $this->run;

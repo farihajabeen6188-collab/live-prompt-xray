@@ -1,13 +1,8 @@
 ai:
-    platform:
-        # Live mode (XRAY_PLATFORM=ollama): a local Ollama server.
-        ollama:
-            endpoint: '%env(OLLAMA_HOST_URL)%'
-
     agent:
         demo:
-            platform: 'app.platform'
-            model: '%env(XRAY_MODEL)%'
+            platform: 'App\Platform\SwitchablePlatform'
+            model: 'scripted-demo'
             prompt:
                 text: |
                     You are the assistant of the Nimbus Cloud demo. Use the tools when they help:

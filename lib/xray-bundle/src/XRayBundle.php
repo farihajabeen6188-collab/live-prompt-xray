@@ -33,6 +33,7 @@ final class XRayBundle extends AbstractBundle
                 ->stringNode('run_url')->defaultNull()
                     ->info('Endpoint of your app that starts an agent run (GET lists scenarios, POST runs a prompt). Without it the console is a viewer.')->end()
                 ->integerNode('max_string_bytes')->min(256)->defaultValue(8192)->info('Longer strings are truncated in traces.')->end()
+                ->integerNode('context_window')->min(1024)->defaultValue(128000)->info('Context window (tokens) the typing preview measures the prompt against.')->end()
                 ->arrayNode('prices')
                     ->info('USD per 1M tokens, keyed by model name, to estimate cost: { "gpt-4o": { input: 2.5, output: 10 } }.')
                     ->useAttributeAsKey('model')
@@ -48,7 +49,7 @@ final class XRayBundle extends AbstractBundle
     }
 
     /**
-     * @param array{enabled: bool, transport: string, storage_path: string, run_url: ?string, redact_keys: list<string>, max_string_bytes: int, prices: array<string, array{input: float, output: float}>} $config
+     * @param array{enabled: bool, transport: string, storage_path: string, run_url: ?string, redact_keys: list<string>, max_string_bytes: int, context_window: int, prices: array<string, array{input: float, output: float}>} $config
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
@@ -66,7 +67,8 @@ final class XRayBundle extends AbstractBundle
             ->set('xray.redact_keys', $config['redact_keys'])
             ->set('xray.max_string_bytes', $config['max_string_bytes'])
             ->set('xray.prices', $config['prices'])
-            ->set('xray.run_url', $config['run_url']);
+            ->set('xray.run_url', $config['run_url'])
+            ->set('xray.context_window', $config['context_window']);
 
         if (!$config['enabled']) {
             return;

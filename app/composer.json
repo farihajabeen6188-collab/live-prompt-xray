@@ -12,7 +12,6 @@
         "symfony/ai-bundle": "^1.0@beta",
         "symfony/ai-generic-platform": "^1.0@beta",
         "symfony/ai-mcp-tool": "^1.0@beta",
-        "symfony/ai-ollama-platform": "^1.0@beta",
         "symfony/ai-platform": "^1.0@beta",
         "symfony/ai-store": "^1.0@beta",
         "symfony/asset": "7.4.*",

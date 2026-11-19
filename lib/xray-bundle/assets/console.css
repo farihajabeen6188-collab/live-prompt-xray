@@ -22,6 +22,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body {
     margin: 0;
@@ -109,7 +110,7 @@ button { cursor: pointer; }
 .panel-head .spacer { flex: 1; }
 .panel-body { flex: 1; min-height: 0; overflow: auto; }
 .area-graph { grid-area: graph; position: relative; }
-.area-side { grid-area: side; display: grid; grid-template-rows: minmax(120px, 38%) minmax(0, 1fr); gap: 1px; background: var(--line); }
+.area-side { grid-area: side; display: grid; grid-template-rows: minmax(160px, 52%) minmax(0, 1fr); gap: 1px; background: var(--line); }
 .area-waterfall { grid-area: waterfall; }
 .area-meters { grid-area: meters; }
 
@@ -301,3 +302,59 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Chat */
+.bubble { max-width: 92%; margin: 0 0 8px; padding: 7px 10px; border-radius: 10px; font: 13px/1.5 var(--font); white-space: pre-wrap; }
+.bubble.user { margin-left: auto; background: var(--activity-dim); border: 1px solid rgba(53, 224, 193, .35); }
+.bubble.bot { background: var(--panel-2); border: 1px solid var(--line); color: #c8d2e2; }
+.badge-button { cursor: pointer; background: none; }
+.badge-button:hover { border-color: var(--muted); }
+.badge-live { color: #ffcf70; }
+
+/* Pre-flight X-Ray */
+.pf-status { color: var(--muted); padding: 4px 0; }
+.pf-head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; margin-bottom: 10px; font-family: var(--font); }
+.pf-title { font-weight: 650; color: var(--activity); letter-spacing: .02em; }
+.pf-section { margin-bottom: 12px; font-family: var(--font); white-space: normal; }
+.pf-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
+.pf-bar { display: flex; gap: 2px; height: 14px; border-radius: 4px; overflow: hidden; margin-bottom: 6px; }
+.pf-bar span { min-width: 3px; transition: flex 200ms ease; }
+.pf-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.pf-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.pf-legend b { color: var(--text); font-family: var(--mono); font-weight: 600; }
+.pf-user { background: var(--activity); }
+.pf-history { background: #4f8cff; }
+.pf-proc.pf-seg-0, .pf-proc.pf-seg-2 { background: #e0b84f; }
+.pf-proc.pf-seg-1, .pf-proc.pf-seg-3 { background: #f08a4b; }
+.pf-tools { background: var(--mcp); }
+.pf-call, .pf-tool, .pf-hit { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 3px 0; font-size: 12px; }
+.pf-call code { color: var(--activity); font-family: var(--mono); }
+.pf-tool code, .pf-hit code { font-family: var(--mono); color: var(--text); }
+.pf-meter { width: 64px; height: 6px; border-radius: 3px; background: var(--line-strong); overflow: hidden; flex: none; }
+.pf-meter span { display: block; height: 100%; background: var(--activity); transition: width 200ms ease; }
+.pf-hit.injected code { color: #e0b84f; }
+.pf-tag { font-size: 11px; color: #e0b84f; border: 1px solid rgba(224, 184, 79, .5); border-radius: 999px; padding: 0 6px; }
+.pf-section.bad { color: var(--error); }
+
+/* Ghost graph: what will happen */
+svg.ghost .g-node rect { stroke-dasharray: 4 3; fill: transparent; }
+svg.ghost .g-node { opacity: .45; }
+svg.ghost .g-node.planned { opacity: 1; }
+svg.ghost .g-node.planned rect { stroke: var(--activity); stroke-dasharray: none; fill: rgba(53, 224, 193, .07); }
+svg.ghost .g-node.mcp.planned rect { stroke: var(--mcp); fill: rgba(169, 139, 255, .08); }
+svg.ghost .g-edge { stroke-dasharray: 3 4; }
+svg.ghost .packet { opacity: .75; }
+
+/* Model dialog */
+.model-card { width: min(560px, 100%); }
+.model-form { display: grid; gap: 10px; padding: 14px; }
+.model-form p { margin: 0; }
+.model-form label { display: grid; gap: 4px; color: var(--muted); font-size: 12px; }
+.model-form input, .model-form select {
+    height: 34px; padding: 0 10px; background: var(--bg); border: 1px solid var(--line-strong); border-radius: var(--radius); color: var(--text); font: 13px var(--mono);
+}
+.model-status { min-height: 18px; font-size: 12px; color: var(--muted); }
+.model-status.ok { color: var(--activity); }
+.model-status.bad { color: var(--error); }
+.model-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.model-actions .spacer { flex: 1; }

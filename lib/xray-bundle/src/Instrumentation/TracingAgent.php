@@ -111,6 +111,14 @@ final readonly class TracingAgent implements AgentInterface
             return $input->asText() ?? '';
         }
 
-        return $input->getUserMessage()?->asText() ?? '';
+        // The latest user message: in a conversation, getUserMessage() would return the first one.
+        $prompt = '';
+        foreach ($input->getMessages() as $message) {
+            if ($message instanceof UserMessage) {
+                $prompt = $message->asText() ?? '';
+            }
+        }
+
+        return $prompt;
     }
 }

@@ -23,10 +23,17 @@ final class Run
     /** @var array<string, array{name: string, arguments: array<string, mixed>}> callIds waiting for their MCP tools/call */
     public array $awaitingMcp = [];
 
+    /** @var list<array{v: int, runId: string, seq: int, ts: int, type: string, data: array<string, mixed>}> events of a preview, kept in memory only */
+    public array $captured = [];
+
+    /**
+     * @param bool $preview a dry run while the user types: events are captured, never stored or published
+     */
     public function __construct(
         public readonly string $id,
         public readonly string $model,
         private readonly int $startedAtNs,
+        public readonly bool $preview = false,
     ) {
     }
 

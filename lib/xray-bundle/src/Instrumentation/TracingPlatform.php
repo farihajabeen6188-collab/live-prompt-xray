@@ -6,11 +6,6 @@ namespace XRay\Instrumentation;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Symfony\AI\Platform\Message\AssistantMessage;
-use Symfony\AI\Platform\Message\MessageBag;
-use Symfony\AI\Platform\Message\MessageInterface;
-use Symfony\AI\Platform\Message\SystemMessage;
-use Symfony\AI\Platform\Message\ToolCallMessage;
 use Symfony\AI\Platform\Model;
 use Symfony\AI\Platform\ModelCatalog\ModelCatalogInterface;
 use Symfony\AI\Platform\PlatformInterface;
@@ -56,7 +51,7 @@ final readonly class TracingPlatform implements PlatformInterface
         $startedAt = $this->recorder->context()->now();
         $estimatedInput = 0;
         try {
-            $messages = $this->messages($input);
+            $messages = new MessageDescriber($this->recorder->redactor())->describeInput($input);
             $estimatedInput = array_sum(array_map(static fn (array $m): int => CostEstimator::estimateTokens($m['content']), $messages));
             $this->recorder->emit(new PromptSent($messages, $this->tools($options), $turn, $modelName));
         } catch (\Throwable $e) {
@@ -124,58 +119,6 @@ final readonly class TracingPlatform implements PlatformInterface
             ++$run->errors;
         }
         $this->recorder->emit(new RunError('platform', $e->getMessage()));
-    }
-
-    /**
-     * @param array<mixed>|string|object $input
-     *
-     * @return list<array{role: string, content: string, truncated: bool, toolCallId?: string}>
-     */
-    private function messages(array|string|object $input): array
-    {
-        if (\is_string($input)) {
-            return [$this->message('user', $input)];
-        }
-        if (!$input instanceof MessageBag) {
-            return [$this->message('input', (string) json_encode($input, \JSON_PARTIAL_OUTPUT_ON_ERROR))];
-        }
-
-        return array_map(fn (MessageInterface $message): array => $this->describe($message), $input->getMessages());
-    }
-
-    /**
-     * @return array{role: string, content: string, truncated: bool, toolCallId?: string}
-     */
-    private function describe(MessageInterface $message): array
-    {
-        $role = $message->getRole()->value;
-
-        if ($message instanceof SystemMessage) {
-            return $this->message($role, (string) $message->getContent());
-        }
-        if ($message instanceof ToolCallMessage) {
-            return [...$this->message($role, $message->asText() ?? ''), 'toolCallId' => $message->getToolCall()->getId()];
-        }
-        if ($message instanceof AssistantMessage) {
-            $text = $message->asText() ?? '';
-            foreach ($message->getToolCalls() as $toolCall) {
-                $text .= ('' === $text ? '' : "\n").\sprintf('→ %s(%s)', $toolCall->getName(), json_encode($toolCall->getArguments(), \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES));
-            }
-
-            return $this->message($role, $text);
-        }
-
-        return $this->message($role, method_exists($message, 'asText') ? (string) $message->asText() : '');
-    }
-
-    /**
-     * @return array{role: string, content: string, truncated: bool}
-     */
-    private function message(string $role, string $content): array
-    {
-        $redacted = $this->recorder->redactor()->redactString($content);
-
-        return ['role' => $role, 'content' => $redacted->value, 'truncated' => $redacted->truncated];
     }
 
     /**

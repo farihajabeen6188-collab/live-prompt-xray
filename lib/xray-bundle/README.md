@@ -52,6 +52,20 @@ needs the tag: `tags: [{ name: 'ai.platform' }]`. The wire format is documented 
 
 Recording never breaks a run: every failure inside X-Ray (store, transport, a bug) is caught and logged as a warning.
 
+## Pre-flight preview (while the user types)
+
+`POST /_xray/preview {"prompt": "...", "history": [{role, content}], "agent": "name"?}` runs the agent's own
+input processors (same services, same order) on the draft, without calling the model, inside a *preview run*:
+the decorators record as usual but the events stay in memory, nothing is stored or published. It returns the
+exact messages the model would receive, the tokens each processor added, the tool definitions, and the
+retrievals and MCP traffic the dry run caused. The console calls it on every keystroke (debounced).
+
+Mind processors with costs: a retrieval that calls a paid embedding API runs on every preview.
+
+To show which tools the model will call, implement `XRay\Preview\ToolPlanProvider` (a rules-based or scripted
+model can know; an LLM cannot without being called). Without one, tools are ranked by keyword match and the
+console says so.
+
 ## Configuration reference
 
 ```yaml
@@ -70,6 +84,8 @@ xray:
     redact_keys: [api_key, apikey, authorization, token, secret, password]
     # Longer strings are truncated (and flagged) in traces.
     max_string_bytes: 8192
+    # The context window the typing preview measures the prompt against.
+    context_window: 128000
     # Optional: an endpoint of your app that runs a prompt, to get a prompt box in the console.
     # GET returns {mode, model, scenarios: [{id, title, prompt, description}]};
     # POST {"prompt": "...", "runId": "run_..."} runs the agent after RunContext::prepare($runId).
@@ -90,6 +106,7 @@ xray:
 | `GET /_xray/runs/{id}/replay?speed=2` | Server-Sent Events replay with the original timing (0.25x to 8x) |
 | `GET /_xray/runs/{id}/export` | Download the trace file |
 | `POST /_xray/import` | Import a trace file (the run gets a new id) |
+| `POST /_xray/preview` | Pre-flight X-Ray of a draft prompt (nothing recorded) |
 | `GET /_xray/diff?a={id}&b={id}` | Compare two runs |
 
 ## Security
